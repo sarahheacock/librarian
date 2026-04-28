@@ -45,7 +45,10 @@ func (w *surfaceWriter) writeGroup(g *CommandGroup, parentPath []string) error {
 		return nil
 	}
 
-	path := append(parentPath, strcase.ToSnake(g.FileName))
+	path := make([]string, len(parentPath), len(parentPath)+1)
+	copy(path, parentPath)
+	path = append(path, strcase.ToSnake(g.FileName))
+
 	groupDir := filepath.Join(w.outputDir, filepath.Join(path...))
 	if err := os.MkdirAll(groupDir, 0755); err != nil {
 		return err
