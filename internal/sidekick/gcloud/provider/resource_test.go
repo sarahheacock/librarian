@@ -763,40 +763,95 @@ func TestGetLiteralSegments(t *testing.T) {
 	}
 }
 
-func TestGetSingularResourceNameForPrefix(t *testing.T) {
+func TestGetResourceForPath(t *testing.T) {
 	instanceResource := &api.Resource{
-		Type:     "example.googleapis.com/Instance",
-		Singular: "instance_custom",
+		Type: "example.googleapis.com/Instance",
 		Patterns: []api.ResourcePattern{
 			parseResourcePattern("projects/{project}/locations/{location}/instances/{instance}"),
 		},
 	}
-
 	model := &api.API{
 		ResourceDefinitions: []*api.Resource{instanceResource},
 	}
 
 	for _, test := range []struct {
-		name   string
-		prefix []string
-		want   string
+		name string
+		path []string
+		want *api.Resource
 	}{
 		{
-			name:   "Match",
-			prefix: []string{"projects", "locations", "instances"},
-			want:   "instance_custom",
+			name: "Match First Pattern",
+			path: []string{"projects", "locations", "instances"},
+			want: instanceResource,
 		},
 		{
-			name:   "No Match",
-			prefix: []string{"projects", "locations", "unknown"},
-			want:   "unknown",
+			name: "No Match",
+			path: []string{"projects", "locations", "unknown"},
+			want: nil,
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			got, _ := GetResourceDisplayNames(model, test.prefix)
-			if diff := cmp.Diff(test.want, got); diff != "" {
-				t.Errorf("mismatch (-want +got):\n%s", diff)
+			got := GetResourceForPath(model, test.path)
+			if got != test.want {
+				t.Errorf("got %v, want %v", got, test.want)
+			}
+		})
+	}
+}
+
+func TestGetResourceTypeNames(t *testing.T) {
+	instanceResource := &api.Resource{
+		Type:     "example.googleapis.com/Instance",
+		Singular: "instance_custom",
+		Plural:   "instances_custom",
+		Patterns: []api.ResourcePattern{
+			parseResourcePattern("projects/{project}/locations/{location}/instances/{instance}"),
+		},
+	}
+	noAnnoResource := &api.Resource{
+		Type: "example.googleapis.com/NoAnnotation",
+		Patterns: []api.ResourcePattern{
+			parseResourcePattern("projects/{project}/locations/{location}/noAnnotations/{noAnnotation}"),
+		},
+	}
+	model := &api.API{
+		ResourceDefinitions: []*api.Resource{instanceResource, noAnnoResource},
+	}
+
+	for _, test := range []struct {
+		name         string
+		path         []string
+		wantSingular string
+		wantPlural   string
+	}{
+		{
+			name:         "Match With Annotations",
+			path:         []string{"projects", "locations", "instances"},
+			wantSingular: "instance_custom",
+			wantPlural:   "instances_custom",
+		},
+		{
+			name:         "Match Without Annotations",
+			path:         []string{"projects", "locations", "noAnnotations"},
+			wantSingular: "NoAnnotation",
+			wantPlural:   "",
+		},
+		{
+			name:         "No Match",
+			path:         []string{"projects", "locations", "unknown"},
+			wantSingular: "",
+			wantPlural:   "",
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			gotSingular, gotPlural := GetResourceTypeNames(model, test.path)
+			if gotSingular != test.wantSingular {
+				t.Errorf("got singular %q, want %q", gotSingular, test.wantSingular)
+			}
+			if gotPlural != test.wantPlural {
+				t.Errorf("got plural %q, want %q", gotPlural, test.wantPlural)
 			}
 		})
 	}

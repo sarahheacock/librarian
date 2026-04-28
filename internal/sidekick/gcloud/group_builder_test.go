@@ -74,7 +74,7 @@ func TestGroupBuilder_BuildGroup(t *testing.T) {
 		t.Errorf("group.FileName = %q, want %q", group.FileName, "instances")
 	}
 
-	wantHelp := "Manage Instance resources." // Fallback singular is the singularized segment name if no resource found
+	wantHelp := "Manage Instances."
 	if group.HelpText != wantHelp {
 		t.Errorf("group.HelpText = %q, want %q", group.HelpText, wantHelp)
 	}

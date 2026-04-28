@@ -379,6 +379,7 @@ func TestNewCommand(t *testing.T) {
 				Name:            "list",
 				Hidden:          false,
 				ResponseIDField: "name",
+				APIVersion:      "v1",
 			},
 		},
 		{
@@ -421,6 +422,7 @@ func TestNewCommand(t *testing.T) {
 				ReadModifyUpdate:     true,
 				StarUpdateMask:       true,
 				DisableAutoFieldMask: true,
+				APIVersion:           "v1",
 			},
 		},
 		{
@@ -441,8 +443,9 @@ func TestNewCommand(t *testing.T) {
 			}(),
 			overrides: &provider.Config{},
 			want: &Command{
-				Name:   "create",
-				Hidden: true,
+				Name:       "create",
+				Hidden:     true,
+				APIVersion: "v1",
 				Async: &Async{
 					Collection:            []string{"test.projects.operations"},
 					ExtractResourceResult: false,
@@ -469,7 +472,7 @@ func TestNewCommand(t *testing.T) {
 				t.Fatalf("newCommandBuilder().build() unexpected error: %v", err)
 			}
 
-			opts := cmpopts.IgnoreFields(Command{}, "Arguments", "APIVersion", "Collection", "Method", "HelpText")
+			opts := cmpopts.IgnoreFields(Command{}, "Arguments", "Collection", "Method", "HelpText")
 			if diff := cmp.Diff(test.want, got, opts); diff != "" {
 				t.Errorf("NewCommand() mismatch (-want +got):\n%s", diff)
 			}

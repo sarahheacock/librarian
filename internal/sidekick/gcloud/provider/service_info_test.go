@@ -113,3 +113,34 @@ func TestResolveRootPackage(t *testing.T) {
 		})
 	}
 }
+
+func TestAPIVersionFromModel(t *testing.T) {
+	for _, test := range []struct {
+		name  string
+		model *api.API
+		want  string
+	}{
+		{
+			name: "Valid Package",
+			model: &api.API{
+				PackageName: "google.cloud.parallelstore.v1",
+			},
+			want: "v1",
+		},
+		{
+			name: "Empty Package",
+			model: &api.API{
+				PackageName: "",
+			},
+			want: "",
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			got := APIVersionFromModel(test.model)
+			if got != test.want {
+				t.Errorf("got %q, want %q", got, test.want)
+			}
+		})
+	}
+}

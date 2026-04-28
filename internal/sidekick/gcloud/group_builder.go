@@ -52,7 +52,7 @@ func (b *groupBuilder) buildRoot() *CommandGroup {
 
 func (b *groupBuilder) build(methodPath []string) *CommandGroup {
 	collectionName := methodPath[len(methodPath)-1]
-	resourceTypeName, _ := provider.GetResourceDisplayNames(b.model, methodPath)
+	resourceTypeName, _ := provider.GetResourceTypeNames(b.model, methodPath)
 
 	helpText := fmt.Sprintf("Manage %s resources.", toTitleCase(resourceTypeName))
 	if resourceTypeName == "" {
