@@ -25,8 +25,6 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-
-
 type surfaceWriter struct {
 	outputDir  string
 	baseModule string

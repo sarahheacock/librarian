@@ -51,13 +51,18 @@ func (b *groupBuilder) buildRoot() *CommandGroup {
 }
 
 func (b *groupBuilder) build(methodPath []string) *CommandGroup {
-	seg := methodPath[len(methodPath)-1]
-	singular, plural := provider.GetResourceDisplayNames(b.model, methodPath)
+	collectionName := methodPath[len(methodPath)-1]
+	resourceTypeName, _ := provider.GetResourceDisplayNames(b.model, methodPath)
+
+	helpText := fmt.Sprintf("Manage %s resources.", toTitleCase(resourceTypeName))
+	if resourceTypeName == "" {
+		helpText = fmt.Sprintf("Manage %s.", toTitleCase(collectionName))
+	}
 
 	return &CommandGroup{
-		ClassName: plural,
-		FileName:  seg,
-		HelpText:  fmt.Sprintf("Manage %s resources.", toTitleCase(singular)),
+		ClassName: collectionName,
+		FileName:  collectionName,
+		HelpText:  helpText,
 		Groups:    make(map[string]*CommandGroup),
 		Commands:  make(map[string]*Command),
 	}

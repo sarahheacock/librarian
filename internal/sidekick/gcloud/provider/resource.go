@@ -340,28 +340,24 @@ func GetLiteralSegments(raw []api.PathSegment) []string {
 func GetResourceForPath(model *api.API, path []string) *api.Resource {
 	target := strings.Join(path, ".")
 	for _, res := range model.ResourceDefinitions {
-		if len(res.Patterns) == 0 {
-			continue
-		}
-		segments := GetLiteralSegments(res.Patterns[0])
-		if strings.Join(segments, ".") == target {
-			return res
+		for _, pattern := range res.Patterns {
+			segments := GetLiteralSegments(pattern)
+			if strings.Join(segments, ".") == target {
+				return res
+			}
 		}
 	}
 	return nil
 }
 
-// GetResourceDisplayNames returns the singular and plural names for a resource,
-// prioritizing explicit annotations in the resource definition and falling back
-// to the message name to provide more descriptive names for help text and classes.
+// GetResourceDisplayNames returns the singular and plural names for a resource.
+// It uses the resource definition's explicit `singular` and `plural` fields
+// in that order and falls back to the resource type name if neither is present.
+// Values must be explicit so if plural is not provided, we cannot determine it.
 func GetResourceDisplayNames(model *api.API, methodPath []string) (singular string, plural string) {
 	res := GetResourceForPath(model, methodPath)
 	if res == nil {
-		// Fallback if no resource found
-		seg := methodPath[len(methodPath)-1]
-		singular = strings.TrimSuffix(seg, "s")
-		plural = seg
-		return singular, plural
+		return "", ""
 	}
 
 	singular = res.Singular
@@ -370,8 +366,5 @@ func GetResourceDisplayNames(model *api.API, methodPath []string) (singular stri
 	}
 
 	plural = res.Plural
-	if plural == "" {
-		plural = singular + "s"
-	}
 	return singular, plural
 }
