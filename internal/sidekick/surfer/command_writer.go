@@ -193,8 +193,6 @@ func mapArgumentsToYAML(args []Argument) []declarative.Argument {
 			}
 		}
 
-
-
 		ya = append(ya, declarative.Argument{
 			ArgName:              strcase.ToKebab(a.ArgName),
 			APIField:             apiField,

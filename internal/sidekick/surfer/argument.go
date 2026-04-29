@@ -66,7 +66,6 @@ type Argument struct {
 	// Spec defines the structure for complex argument types, such as key-value pairs for a map.
 	// Origin: Generated for `map` fields in a proto message.
 	Spec []ArgSpec
-
 }
 
 // ArgSpec defines the structure within a complex argument type, such as the
