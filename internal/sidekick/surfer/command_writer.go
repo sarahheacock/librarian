@@ -174,9 +174,30 @@ func mapArgumentsToYAML(args []Argument) []declarative.Argument {
 			var nilVal any = nil
 			def.Value = &nilVal
 		}
+		var apiField string
+		var rmp map[string]string
+
+		if len(a.APIField) > 0 {
+			parts := make([]string, len(a.APIField))
+			for i, p := range a.APIField {
+				parts[i] = strcase.ToLowerCamel(p)
+			}
+			joinedPath := strings.Join(parts, ".")
+
+			if a.ResourceSpec != nil {
+				rmp = map[string]string{
+					joinedPath: "{__relative_name__}",
+				}
+			} else {
+				apiField = joinedPath
+			}
+		}
+
+
+
 		ya = append(ya, declarative.Argument{
-			ArgName:              a.ArgName,
-			APIField:             a.APIField,
+			ArgName:              strcase.ToKebab(a.ArgName),
+			APIField:             apiField,
 			HelpText:             a.HelpText,
 			Action:               a.Action,
 			Default:              def,
@@ -190,7 +211,7 @@ func mapArgumentsToYAML(args []Argument) []declarative.Argument {
 			Type:                 t,
 			Choices:              mapChoicesToYAML(a.Choices),
 			Spec:                 mapArgSpecsToYAML(a.Spec),
-			ResourceMethodParams: a.ResourceMethodParams,
+			ResourceMethodParams: rmp,
 		})
 	}
 	return ya
