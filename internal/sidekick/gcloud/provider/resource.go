@@ -350,21 +350,26 @@ func GetResourceForPath(model *api.API, path []string) *api.Resource {
 	return nil
 }
 
-// GetResourceTypeNames returns the singular and plural names for a resource.
-// It uses the resource definition's explicit `singular` and `plural` fields
-// in that order and falls back to the resource type name if neither is present.
-// Values must be explicit so if plural is not provided, we cannot determine it.
-func GetResourceTypeNames(model *api.API, methodPath []string) (singular string, plural string) {
+// GetResourceTypeName returns the singular name for a resource.
+// It uses the resource definition's explicit `singular` field
+// and falls back to the resource type name if not present.
+func GetResourceTypeName(model *api.API, methodPath []string) string {
 	res := GetResourceForPath(model, methodPath)
 	if res == nil {
-		return "", ""
+		return ""
 	}
-
-	singular = res.Singular
-	if singular == "" {
-		singular = path.Base(res.Type)
+	if res.Singular != "" {
+		return res.Singular
 	}
+	return path.Base(res.Type)
+}
 
-	plural = res.Plural
-	return singular, plural
+// GetPluralResourceTypeName returns the plural name for a resource.
+// It uses the resource definition's explicit `plural` field.
+func GetPluralResourceTypeName(model *api.API, methodPath []string) string {
+	res := GetResourceForPath(model, methodPath)
+	if res == nil {
+		return ""
+	}
+	return res.Plural
 }

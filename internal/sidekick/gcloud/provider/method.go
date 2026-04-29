@@ -277,9 +277,9 @@ func GetMethodHelpText(overrides *Config, method *api.Method, model *api.API) He
 }
 
 // APIVersionFromMethod extracts the API version from the method's service package name.
-func APIVersionFromMethod(method *api.Method) string {
-	if method.Service != nil {
-		return apiVersionFromPackage(method.Service.Package)
+func APIVersionFromMethod(method *api.Method) (string, error) {
+	if method.Service == nil {
+		return "", fmt.Errorf("method %s has nil Service", method.Name)
 	}
-	return ""
+	return apiVersionFromPackage(method.Service.Package), nil
 }

@@ -28,7 +28,7 @@ import (
 type surfaceWriter struct {
 	outputDir  string
 	baseModule string
-	tracks     []string
+	tracks     []ReleaseTrack
 }
 
 func writeSurface(outputDir string, baseModule string, surface *Surface) error {
@@ -98,14 +98,14 @@ func (w *surfaceWriter) writeCommandGroupFile(g *CommandGroup, path []string) er
 	for _, t := range w.tracks {
 		var suffix string
 		switch t {
-		case "GA":
+		case GA:
 			suffix = "Ga"
-		case "BETA":
+		case Beta:
 			suffix = "Beta"
-		case "ALPHA":
+		case Alpha:
 			suffix = "Alpha"
 		}
-		trackViews = append(trackViews, trackView{Name: t, Suffix: suffix})
+		trackViews = append(trackViews, trackView{Name: string(t), Suffix: suffix})
 	}
 
 	modulePathParts := make([]string, 0, 2+len(path))

@@ -562,13 +562,6 @@ func TestAPIVersionFromMethod(t *testing.T) {
 			want: "v1",
 		},
 		{
-			name: "No Service",
-			method: &api.Method{
-				Service: nil,
-			},
-			want: "",
-		},
-		{
 			name: "Empty Package",
 			method: &api.Method{
 				Service: &api.Service{
@@ -580,10 +573,23 @@ func TestAPIVersionFromMethod(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			got := APIVersionFromMethod(test.method)
+			got, err := APIVersionFromMethod(test.method)
+			if err != nil {
+				t.Fatalf("APIVersionFromMethod() unexpected error: %v", err)
+			}
 			if got != test.want {
 				t.Errorf("got %q, want %q", got, test.want)
 			}
 		})
+	}
+}
+
+func TestAPIVersionFromMethod_Error(t *testing.T) {
+	method := &api.Method{
+		Service: nil,
+	}
+	_, err := APIVersionFromMethod(method)
+	if err == nil {
+		t.Errorf("APIVersionFromMethod() expected error for nil Service, got nil")
 	}
 }

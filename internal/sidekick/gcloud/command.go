@@ -14,10 +14,22 @@
 
 package gcloud
 
+// ReleaseTrack represents a gcloud release track.
+type ReleaseTrack string
+
+const (
+	// Alpha release track.
+	Alpha ReleaseTrack = "ALPHA"
+	// Beta release track.
+	Beta ReleaseTrack = "BETA"
+	// GA release track.
+	GA ReleaseTrack = "GA"
+)
+
 // Surface represents the top-level collection of command trees.
 type Surface struct {
 	Root   *CommandGroup
-	Tracks []string
+	Tracks []ReleaseTrack
 }
 
 // CommandGroup defines the metadata for a structural grouping of gcloud commands

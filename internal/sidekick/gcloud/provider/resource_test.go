@@ -800,11 +800,10 @@ func TestGetResourceForPath(t *testing.T) {
 	}
 }
 
-func TestGetResourceTypeNames(t *testing.T) {
+func TestGetResourceTypeName(t *testing.T) {
 	instanceResource := &api.Resource{
 		Type:     "example.googleapis.com/Instance",
 		Singular: "instance_custom",
-		Plural:   "instances_custom",
 		Patterns: []api.ResourcePattern{
 			parseResourcePattern("projects/{project}/locations/{location}/instances/{instance}"),
 		},
@@ -820,38 +819,69 @@ func TestGetResourceTypeNames(t *testing.T) {
 	}
 
 	for _, test := range []struct {
-		name         string
-		path         []string
-		wantSingular string
-		wantPlural   string
+		name string
+		path []string
+		want string
 	}{
 		{
-			name:         "Match With Annotations",
-			path:         []string{"projects", "locations", "instances"},
-			wantSingular: "instance_custom",
-			wantPlural:   "instances_custom",
+			name: "Match With Annotations",
+			path: []string{"projects", "locations", "instances"},
+			want: "instance_custom",
 		},
 		{
-			name:         "Match Without Annotations",
-			path:         []string{"projects", "locations", "noAnnotations"},
-			wantSingular: "NoAnnotation",
-			wantPlural:   "",
+			name: "Match Without Annotations",
+			path: []string{"projects", "locations", "noAnnotations"},
+			want: "NoAnnotation",
 		},
 		{
-			name:         "No Match",
-			path:         []string{"projects", "locations", "unknown"},
-			wantSingular: "",
-			wantPlural:   "",
+			name: "No Match",
+			path: []string{"projects", "locations", "unknown"},
+			want: "",
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			gotSingular, gotPlural := GetResourceTypeNames(model, test.path)
-			if gotSingular != test.wantSingular {
-				t.Errorf("got singular %q, want %q", gotSingular, test.wantSingular)
+			got := GetResourceTypeName(model, test.path)
+			if got != test.want {
+				t.Errorf("got %q, want %q", got, test.want)
 			}
-			if gotPlural != test.wantPlural {
-				t.Errorf("got plural %q, want %q", gotPlural, test.wantPlural)
+		})
+	}
+}
+
+func TestGetPluralResourceTypeName(t *testing.T) {
+	instanceResource := &api.Resource{
+		Type:   "example.googleapis.com/Instance",
+		Plural: "instances_custom",
+		Patterns: []api.ResourcePattern{
+			parseResourcePattern("projects/{project}/locations/{location}/instances/{instance}"),
+		},
+	}
+	model := &api.API{
+		ResourceDefinitions: []*api.Resource{instanceResource},
+	}
+
+	for _, test := range []struct {
+		name string
+		path []string
+		want string
+	}{
+		{
+			name: "Match With Annotations",
+			path: []string{"projects", "locations", "instances"},
+			want: "instances_custom",
+		},
+		{
+			name: "No Match",
+			path: []string{"projects", "locations", "unknown"},
+			want: "",
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			got := GetPluralResourceTypeName(model, test.path)
+			if got != test.want {
+				t.Errorf("got %q, want %q", got, test.want)
 			}
 		})
 	}

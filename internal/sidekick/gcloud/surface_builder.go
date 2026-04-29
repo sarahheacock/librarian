@@ -33,7 +33,11 @@ func newSurfaceBuilder(model *api.API, config *provider.Config) *surfaceBuilder 
 
 func (b *surfaceBuilder) build() (*Surface, error) {
 	var root *CommandGroup
-	tracks := provider.Tracks(provider.APIVersionFromModel(b.model))
+	providerTracks := provider.Tracks(provider.APIVersionFromModel(b.model))
+	var tracks []ReleaseTrack
+	for _, t := range providerTracks {
+		tracks = append(tracks, ReleaseTrack(t))
+	}
 
 	for _, service := range b.model.Services {
 		gb := newGroupBuilder(b.model, service, b.config)

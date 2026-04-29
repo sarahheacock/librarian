@@ -21,15 +21,6 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-const (
-	// ALPHA release track.
-	ALPHA = "ALPHA"
-	// BETA release track.
-	BETA = "BETA"
-	// GA release track.
-	GA = "GA"
-)
-
 // apiVersionFromPackage extracts the API version from the package name.
 // e.g. "google.cloud.parallelstore.v1" -> "v1".
 func apiVersionFromPackage(pkg string) string {
@@ -43,21 +34,20 @@ func APIVersionFromModel(model *api.API) string {
 }
 
 // Tracks infers the release tracks from the API version string.
-// as mandated per AIP-185
 // e.g. "v1beta" -> ["BETA"].
-func Tracks(version string) []string {
+func Tracks(version string) []ReleaseTrack {
 	// AIP-191: The version component MUST follow the pattern `v[0-9]+...`.
 	if !strings.HasPrefix(version, "v") {
-		return []string{GA}
+		return []ReleaseTrack{ReleaseTrackGA}
 	}
 
 	if strings.Contains(version, "alpha") {
-		return []string{ALPHA}
+		return []ReleaseTrack{ReleaseTrackAlpha}
 	}
 	if strings.Contains(version, "beta") {
-		return []string{BETA}
+		return []ReleaseTrack{ReleaseTrackBeta}
 	}
-	return []string{GA}
+	return []ReleaseTrack{ReleaseTrackGA}
 }
 
 // GetServiceTitle returns the service title for documentation.

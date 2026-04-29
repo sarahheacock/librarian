@@ -25,14 +25,14 @@ func TestTracks(t *testing.T) {
 	for _, test := range []struct {
 		name string
 		pkg  string
-		want []string
+		want []ReleaseTrack
 	}{
-		{"GA package", "google.cloud.parallelstore.v1", []string{"GA"}},
-		{"Beta package", "google.cloud.parallelstore.v1beta", []string{"BETA"}},
-		{"Alpha package", "google.cloud.parallelstore.v1alpha", []string{"ALPHA"}},
-		{"Empty package", "", []string{"GA"}},
-		{"Package without version", "google.cloud.parallelstore", []string{"GA"}},
-		{"Other version", "google.cloud.parallelstore.v2", []string{"GA"}},
+		{"GA package", "google.cloud.parallelstore.v1", []ReleaseTrack{ReleaseTrackGA}},
+		{"Beta package", "google.cloud.parallelstore.v1beta", []ReleaseTrack{ReleaseTrackBeta}},
+		{"Alpha package", "google.cloud.parallelstore.v1alpha", []ReleaseTrack{ReleaseTrackAlpha}},
+		{"Empty package", "", []ReleaseTrack{ReleaseTrackGA}},
+		{"Package without version", "google.cloud.parallelstore", []ReleaseTrack{ReleaseTrackGA}},
+		{"Other version", "google.cloud.parallelstore.v2", []ReleaseTrack{ReleaseTrackGA}},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()

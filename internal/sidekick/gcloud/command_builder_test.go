@@ -480,6 +480,20 @@ func TestNewCommand(t *testing.T) {
 	}
 }
 
+func TestNewCommand_Error(t *testing.T) {
+	m := api.NewTestMethod("CreateThing").WithVerb("POST")
+	m.Service = nil // Ensure it's nil
+
+	service := api.NewTestService("TestService").WithPackage("google.cloud.test.v1")
+	service.DefaultHost = "test.googleapis.com"
+	model := api.NewTestAPI([]*api.Message{}, nil, []*api.Service{service})
+
+	_, err := newCommandBuilder(m, &provider.Config{}, model, service).build()
+	if err == nil {
+		t.Errorf("build() expected error for nil Service, got nil")
+	}
+}
+
 func TestTableFormat(t *testing.T) {
 	tests := []struct {
 		name    string

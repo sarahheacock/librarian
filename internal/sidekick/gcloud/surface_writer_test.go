@@ -138,7 +138,7 @@ class InstancesGa(base.Group):
 func TestWriteCommandGroupFile(t *testing.T) {
 	tmpDir := t.TempDir()
 	ga := &CommandGroup{ClassName: "instances", FileName: "instances", HelpText: "Manage instances"}
-	w := &surfaceWriter{outputDir: tmpDir, baseModule: "googlecloudsdk.instances", tracks: []string{"GA"}}
+	w := &surfaceWriter{outputDir: tmpDir, baseModule: "googlecloudsdk.instances", tracks: []ReleaseTrack{GA}}
 	if err := w.writeCommandGroupFile(ga, []string{"instances"}); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -151,7 +151,7 @@ func TestWriteCommandGroupFile(t *testing.T) {
 
 func TestWriteCommandGroupFile_Error(t *testing.T) {
 	ga := &CommandGroup{ClassName: "instances", FileName: "instances", HelpText: "Manage instances"}
-	w := &surfaceWriter{outputDir: "/dev/null/invalid/path", baseModule: "googlecloudsdk.instances", tracks: []string{"GA"}}
+	w := &surfaceWriter{outputDir: "/dev/null/invalid/path", baseModule: "googlecloudsdk.instances", tracks: []ReleaseTrack{GA}}
 	err := w.writeCommandGroupFile(ga, []string{"instances"})
 	if err == nil {
 		t.Error("expected error writing to invalid path, got nil")
@@ -180,7 +180,7 @@ func TestWriteSurface(t *testing.T) {
 				},
 			},
 		},
-		Tracks: []string{"GA"},
+		Tracks: []ReleaseTrack{GA},
 	}
 
 	if err := writeSurface(tmpDir, "googlecloudsdk", surface); err != nil {
@@ -237,18 +237,18 @@ func TestWriteCommandGroupFile_TrackCombinations(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var g *CommandGroup
-			var tracks []string
+			var tracks []ReleaseTrack
 			if tt.ga != nil {
 				g = tt.ga
-				tracks = append(tracks, "GA")
+				tracks = append(tracks, GA)
 			}
 			if tt.beta != nil {
 				g = tt.beta
-				tracks = append(tracks, "BETA")
+				tracks = append(tracks, Beta)
 			}
 			if tt.alpha != nil {
 				g = tt.alpha
-				tracks = append(tracks, "ALPHA")
+				tracks = append(tracks, Alpha)
 			}
 
 			w := &surfaceWriter{outputDir: tmpDir, baseModule: "googlecloudsdk.instances", tracks: tracks}
@@ -286,7 +286,7 @@ func TestWriteGroup_DirError(t *testing.T) {
 	}
 
 	ga := &CommandGroup{ClassName: "instances", FileName: "instances"}
-	w := &surfaceWriter{outputDir: tmpDir, baseModule: "googlecloudsdk", tracks: []string{"GA"}}
+	w := &surfaceWriter{outputDir: tmpDir, baseModule: "googlecloudsdk", tracks: []ReleaseTrack{GA}}
 	err := w.writeGroup(ga, nil)
 	if err == nil {
 		t.Error("expected error when creating directory over an existing file, got nil")
@@ -295,7 +295,7 @@ func TestWriteGroup_DirError(t *testing.T) {
 
 func TestWriteGroup_NoName(t *testing.T) {
 	tmpDir := t.TempDir()
-	w := &surfaceWriter{outputDir: tmpDir, baseModule: "googlecloudsdk", tracks: []string{}}
+	w := &surfaceWriter{outputDir: tmpDir, baseModule: "googlecloudsdk", tracks: []ReleaseTrack{}}
 	err := w.writeGroup(nil, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
