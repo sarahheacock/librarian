@@ -19,6 +19,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/googleapis/librarian/internal/config"
 	"github.com/googleapis/librarian/internal/sidekick/parser"
 	"github.com/googleapis/librarian/internal/sources"
@@ -60,5 +61,62 @@ func TestFromProtobuf(t *testing.T) {
 			t.Fatalf("missing %s: %s", filename, err)
 		}
 		t.Fatal(err)
+	}
+}
+
+func TestParallelstore(t *testing.T) {
+	testhelper.RequireCommand(t, "protoc")
+	testdataDir, err := filepath.Abs("../../testdata")
+	if err != nil {
+		t.Fatal(err)
+	}
+	outDir := t.TempDir()
+
+	cfg := &parser.ModelConfig{
+		SpecificationFormat: config.SpecProtobuf,
+		ServiceConfig:       "google/cloud/parallelstore/v1/service.yaml",
+		SpecificationSource: "google/cloud/parallelstore/v1",
+		Source: &sources.SourceConfig{
+			Sources: &sources.Sources{
+				Googleapis: filepath.Join(testdataDir, "googleapis"),
+			},
+			ActiveRoots: []string{"googleapis"},
+		},
+		Codec: map[string]string{
+			"copyright-year": "2026",
+		},
+	}
+	model, err := parser.CreateModel(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := Generate(model, outDir); err != nil {
+		t.Fatal(err)
+	}
+
+	mainFile := filepath.Join(outDir, "main.go")
+	gotMain, err := os.ReadFile(mainFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantMain, err := os.ReadFile(filepath.Join("testdata", "parallelstore", "main.go.golden"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if diff := cmp.Diff(string(wantMain), string(gotMain)); diff != "" {
+		t.Errorf("mismatch (-want +got):\n%s", diff)
+	}
+
+	readmeFile := filepath.Join(outDir, "README.md")
+	gotReadme, err := os.ReadFile(readmeFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantReadme, err := os.ReadFile(filepath.Join("testdata", "parallelstore", "README.md.golden"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if diff := cmp.Diff(string(wantReadme), string(gotReadme)); diff != "" {
+		t.Errorf("mismatch (-want +got):\n%s", diff)
 	}
 }
