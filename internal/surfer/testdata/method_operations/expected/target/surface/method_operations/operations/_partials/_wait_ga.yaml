@@ -54,4 +54,4 @@
   async:
     collection:
       - methodoperations.projects.locations.operations
-    extract_resource_result: true
+    extract_resource_result: false
