@@ -373,3 +373,46 @@ func GetPluralResourceTypeName(model *api.API, methodPath []string) string {
 	}
 	return res.Plural
 }
+
+// BuildInflectionMap pre-computes a lookup map from plural literal collection segments to their singular variable names.
+// This is extracted from the model's standard resource definitions and message patterns.
+// Example: "projects" -> "project", "locations" -> "location".
+func BuildInflectionMap(model *api.API) map[string]string {
+	m := make(map[string]string)
+	if model == nil {
+		return m
+	}
+
+	for _, res := range model.ResourceDefinitions {
+		for _, pattern := range res.Patterns {
+			for k, v := range inflectionsFromPattern(pattern) {
+				m[k] = v
+			}
+		}
+	}
+	for _, msg := range model.Messages {
+		if msg.Resource == nil {
+			continue
+		}
+		for _, pattern := range msg.Resource.Patterns {
+			for k, v := range inflectionsFromPattern(pattern) {
+				m[k] = v
+			}
+		}
+	}
+	return m
+}
+
+// inflectionsFromPattern extracts collection segment inflections from a single structured path pattern.
+func inflectionsFromPattern(pattern []api.PathSegment) map[string]string {
+	m := make(map[string]string)
+	for j := 0; j < len(pattern)-1; j++ {
+		if pattern[j].Literal != nil && pattern[j+1].Variable != nil {
+			vars := pattern[j+1].Variable.FieldPath
+			if len(vars) > 0 {
+				m[*pattern[j].Literal] = vars[len(vars)-1]
+			}
+		}
+	}
+	return m
+}

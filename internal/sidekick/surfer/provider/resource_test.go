@@ -886,3 +886,94 @@ func TestGetPluralResourceTypeName(t *testing.T) {
 		})
 	}
 }
+
+func TestBuildInflectionMap(t *testing.T) {
+	tests := []struct {
+		name  string
+		model *api.API
+		want  map[string]string
+	}{
+		{
+			name: "Inflections from resource definitions and messages",
+			model: &api.API{
+				ResourceDefinitions: []*api.Resource{
+					{
+						Patterns: []api.ResourcePattern{
+							parseResourcePattern("projects/{project}/locations/{location}/instances/{instance}"),
+						},
+					},
+				},
+				Messages: []*api.Message{
+					{
+						Resource: &api.Resource{
+							Patterns: []api.ResourcePattern{
+								parseResourcePattern("organizations/{organization}/locations/{location}/nodes/{node}"),
+							},
+						},
+					},
+				},
+			},
+			want: map[string]string{
+				"projects":      "project",
+				"locations":     "location",
+				"instances":     "instance",
+				"organizations": "organization",
+				"nodes":         "node",
+			},
+		},
+		{
+			name:  "Nil Model",
+			model: nil,
+			want:  map[string]string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := BuildInflectionMap(tt.model)
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("BuildInflectionMap() mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestInflectionsFromPattern(t *testing.T) {
+	tests := []struct {
+		name    string
+		pattern []api.PathSegment
+		want    map[string]string
+	}{
+		{
+			name:    "Valid Pattern",
+			pattern: parseResourcePattern("projects/{project}/locations/{location}"),
+			want: map[string]string{
+				"projects":  "project",
+				"locations": "location",
+			},
+		},
+		{
+			name:    "Ending With Wildcard Variable",
+			pattern: parseResourcePattern("projects/{project}/*"),
+			want: map[string]string{
+				"projects": "project",
+			},
+		},
+		{
+			name:    "Short Pattern",
+			pattern: parseResourcePattern("projects"),
+			want:    map[string]string{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := inflectionsFromPattern(tt.pattern)
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("inflectionsFromPattern() mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
