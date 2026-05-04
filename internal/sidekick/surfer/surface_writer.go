@@ -25,22 +25,23 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-type surfaceWriter struct {
-	outputDir  string
-	baseModule string
-	tracks     []ReleaseTrack
+// SurfaceWriterConfig contains the configuration required to write a command surface.
+type SurfaceWriterConfig struct {
+	OutputDir  string
+	BaseModule string
+	Tracks     []ReleaseTrack
 }
 
 func writeSurface(outputDir string, baseModule string, surface *Surface) error {
-	w := &surfaceWriter{
-		outputDir:  outputDir,
-		baseModule: baseModule,
-		tracks:     surface.Tracks,
+	cfg := &SurfaceWriterConfig{
+		OutputDir:  outputDir,
+		BaseModule: baseModule,
+		Tracks:     surface.Tracks,
 	}
-	return w.writeGroup(surface.Root, nil)
+	return writeGroup(cfg, surface.Root, nil)
 }
 
-func (w *surfaceWriter) writeGroup(g *CommandGroup, parentPath []string) error {
+func writeGroup(cfg *SurfaceWriterConfig, g *CommandGroup, parentPath []string) error {
 	if g == nil {
 		return nil
 	}
@@ -49,44 +50,44 @@ func (w *surfaceWriter) writeGroup(g *CommandGroup, parentPath []string) error {
 	copy(path, parentPath)
 	path = append(path, strcase.ToSnake(g.FileName))
 
-	groupDir := filepath.Join(w.outputDir, filepath.Join(path...))
+	groupDir := filepath.Join(cfg.OutputDir, filepath.Join(path...))
 	if err := os.MkdirAll(groupDir, 0755); err != nil {
 		return err
 	}
 
-	if err := w.writeCommandGroupFile(g, path); err != nil {
+	if err := writeCommandGroupFile(cfg, g, path); err != nil {
 		return err
 	}
 
-	if err := w.writeGroupCommands(g, path); err != nil {
+	if err := writeGroupCommands(cfg, g, path); err != nil {
 		return err
 	}
 
-	return w.writeGroupSubgroups(g, path)
+	return writeGroupSubgroups(cfg, g, path)
 }
 
-func (w *surfaceWriter) writeGroupCommands(g *CommandGroup, path []string) error {
-	groupDir := filepath.Join(w.outputDir, filepath.Join(path...))
+func writeGroupCommands(cfg *SurfaceWriterConfig, g *CommandGroup, path []string) error {
+	groupDir := filepath.Join(cfg.OutputDir, filepath.Join(path...))
 
 	for verb, cmd := range g.Commands {
-		if err := writeCommandFiles(groupDir, verb, cmd, w.tracks); err != nil {
+		if err := writeCommandFiles(groupDir, verb, cmd, cfg.Tracks); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (w *surfaceWriter) writeGroupSubgroups(g *CommandGroup, path []string) error {
+func writeGroupSubgroups(cfg *SurfaceWriterConfig, g *CommandGroup, path []string) error {
 	for _, subGroup := range g.Groups {
-		if err := w.writeGroup(subGroup, path); err != nil {
+		if err := writeGroup(cfg, subGroup, path); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (w *surfaceWriter) writeCommandGroupFile(g *CommandGroup, path []string) error {
-	groupDir := filepath.Join(w.outputDir, filepath.Join(path...))
+func writeCommandGroupFile(cfg *SurfaceWriterConfig, g *CommandGroup, path []string) error {
+	groupDir := filepath.Join(cfg.OutputDir, filepath.Join(path...))
 	if err := os.MkdirAll(groupDir, 0755); err != nil {
 		return err
 	}
@@ -95,7 +96,7 @@ func (w *surfaceWriter) writeCommandGroupFile(g *CommandGroup, path []string) er
 
 	primaryHelpText := g.HelpText
 	var trackViews []trackView
-	for _, t := range w.tracks {
+	for _, t := range cfg.Tracks {
 		var suffix string
 		switch t {
 		case GA:
@@ -109,8 +110,8 @@ func (w *surfaceWriter) writeCommandGroupFile(g *CommandGroup, path []string) er
 	}
 
 	modulePathParts := make([]string, 0, 2+len(path))
-	if w.baseModule != "" {
-		modulePathParts = append(modulePathParts, w.baseModule)
+	if cfg.BaseModule != "" {
+		modulePathParts = append(modulePathParts, cfg.BaseModule)
 		modulePathParts = append(modulePathParts, "surface")
 	}
 	modulePathParts = append(modulePathParts, path...)

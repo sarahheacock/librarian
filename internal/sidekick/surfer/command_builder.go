@@ -24,43 +24,51 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-func buildCommand(method *api.Method, overrides *provider.Config, model *api.API, service *api.Service) (*Command, error) {
-	args, err := newArguments(method, overrides, model, service)
+// CommandContext contains the context required to build a command.
+type CommandContext struct {
+	Method    *api.Method
+	Overrides *provider.Config
+	Model     *api.API
+	Service   *api.Service
+}
+
+func buildCommand(ctx *CommandContext) (*Command, error) {
+	args, err := newArguments(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	apiVersion, err := provider.APIVersionFromMethod(method)
+	apiVersion, err := provider.APIVersionFromMethod(ctx.Method)
 	if err != nil {
 		return nil, err
 	}
 
-	useUpdateMask := updateMask(method)
+	useUpdateMask := updateMask(ctx.Method)
 	return &Command{
-		Name:                 name(method),
-		Hidden:               hidden(overrides),
-		HelpText:             helpText(overrides, method, model),
+		Name:                 name(ctx.Method),
+		Hidden:               hidden(ctx.Overrides),
+		HelpText:             helpText(ctx.Overrides, ctx.Method, ctx.Model),
 		APIVersion:           apiVersion,
-		Collection:           collectionPath(method, service, false),
-		Method:               requestMethod(method),
+		Collection:           collectionPath(ctx.Method, ctx.Service, false),
+		Method:               requestMethod(ctx.Method),
 		Arguments:            args,
-		ResponseIDField:      responseIDField(method),
+		ResponseIDField:      responseIDField(ctx.Method),
 		OutputFormat:         outputFormat(),
-		ReadModifyUpdate:     provider.IsUpdate(method),
+		ReadModifyUpdate:     provider.IsUpdate(ctx.Method),
 		StarUpdateMask:       useUpdateMask,
 		DisableAutoFieldMask: useUpdateMask,
-		Async:                async(method, model, service),
+		Async:                async(ctx.Method, ctx.Model, ctx.Service),
 	}, nil
 }
 
 // buildWaitCommand synthesizes a 'wait' command for operations based on GetOperation method.
-func buildWaitCommand(getMethod *api.Method, overrides *provider.Config, model *api.API, service *api.Service) (*Command, error) {
-	arg, err := positionalResourceArg(getMethod, overrides, model, service)
+func buildWaitCommand(ctx *CommandContext) (*Command, error) {
+	arg, err := positionalResourceArg(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	apiVersion, err := provider.APIVersionFromMethod(getMethod)
+	apiVersion, err := provider.APIVersionFromMethod(ctx.Method)
 	if err != nil {
 		return nil, err
 	}
@@ -73,17 +81,17 @@ func buildWaitCommand(getMethod *api.Method, overrides *provider.Config, model *
 
 	return &Command{
 		Name:   "wait",
-		Hidden: hidden(overrides),
+		Hidden: hidden(ctx.Overrides),
 		HelpText: HelpText{
 			Brief:       "Wait operations",
 			Description: "Wait an operation",
 			Examples:    "To wait the operation, run:\n\n    $ {command}",
 		},
 		APIVersion: apiVersion,
-		Collection: collectionPath(getMethod, service, false),
+		Collection: collectionPath(ctx.Method, ctx.Service, false),
 		Arguments:  waitArgs,
 		Async: &Async{
-			Collection:            collectionPath(getMethod, service, true),
+			Collection:            collectionPath(ctx.Method, ctx.Service, true),
 			ExtractResourceResult: false,
 		},
 	}, nil
@@ -191,13 +199,13 @@ type classifiedFields struct {
 
 // newArguments generates the set of arguments for a command by parsing the
 // fields of the method's request message.
-func newArguments(method *api.Method, overrides *provider.Config, model *api.API, service *api.Service) ([]Argument, error) {
+func newArguments(ctx *CommandContext) ([]Argument, error) {
 	var args []Argument
-	if method.InputType == nil {
+	if ctx.Method.InputType == nil {
 		return args, nil
 	}
 
-	cf, err := categorizeFields(method, model)
+	cf, err := categorizeFields(ctx.Method, ctx.Model)
 	if err != nil {
 		return nil, err
 	}
@@ -207,12 +215,26 @@ func newArguments(method *api.Method, overrides *provider.Config, model *api.API
 		if cf.resourceIdField != nil {
 			idField = cf.resourceIdField.field
 		}
-		arg := newArgumentBuilder(method, overrides, model, service, cf.primaryField.field, cf.primaryField.prefix).buildPrimaryResource(idField)
+		arg := buildPrimaryResourceArgument(&ArgumentContext{
+			Method:    ctx.Method,
+			Overrides: ctx.Overrides,
+			Model:     ctx.Model,
+			Service:   ctx.Service,
+			Field:     cf.primaryField.field,
+			APIField:  cf.primaryField.prefix,
+		}, idField)
 		args = append(args, arg)
 	}
 
 	for _, fwp := range cf.other {
-		arg, err := newArgumentBuilder(method, overrides, model, service, fwp.field, fwp.prefix).build()
+		arg, err := buildArgument(&ArgumentContext{
+			Method:    ctx.Method,
+			Overrides: ctx.Overrides,
+			Model:     ctx.Model,
+			Service:   ctx.Service,
+			Field:     fwp.field,
+			APIField:  fwp.prefix,
+		})
 		if err != nil {
 			return nil, err
 		}
@@ -225,8 +247,8 @@ func newArguments(method *api.Method, overrides *provider.Config, model *api.API
 	return args, nil
 }
 
-func positionalResourceArg(method *api.Method, overrides *provider.Config, model *api.API, service *api.Service) (*Argument, error) {
-	cf, err := categorizeFields(method, model)
+func positionalResourceArg(ctx *CommandContext) (*Argument, error) {
+	cf, err := categorizeFields(ctx.Method, ctx.Model)
 	if err != nil {
 		return nil, err
 	}
@@ -240,7 +262,14 @@ func positionalResourceArg(method *api.Method, overrides *provider.Config, model
 		idField = cf.resourceIdField.field
 	}
 
-	arg := newArgumentBuilder(method, overrides, model, service, cf.primaryField.field, cf.primaryField.prefix).buildPrimaryResource(idField)
+	arg := buildPrimaryResourceArgument(&ArgumentContext{
+		Method:    ctx.Method,
+		Overrides: ctx.Overrides,
+		Model:     ctx.Model,
+		Service:   ctx.Service,
+		Field:     cf.primaryField.field,
+		APIField:  cf.primaryField.prefix,
+	}, idField)
 	return &arg, nil
 }
 

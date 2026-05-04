@@ -24,60 +24,47 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-// argumentBuilder encapsulates the state required to generate the set of
-// arguments for a gcloud command.
-type argumentBuilder struct {
-	method    *api.Method
-	overrides *provider.Config
-	model     *api.API
-	service   *api.Service
-	field     *api.Field
-	apiField  []string
+// ArgumentContext contains the context required to build a command-line argument.
+type ArgumentContext struct {
+	Method    *api.Method
+	Overrides *provider.Config
+	Model     *api.API
+	Service   *api.Service
+	Field     *api.Field
+	APIField  []string
 }
 
-// newArgumentBuilder constructs a new argumentBuilder.
-func newArgumentBuilder(method *api.Method, overrides *provider.Config, model *api.API, service *api.Service, field *api.Field, apiField []string) *argumentBuilder {
-	return &argumentBuilder{
-		method:    method,
-		overrides: overrides,
-		model:     model,
-		service:   service,
-		field:     field,
-		apiField:  apiField,
-	}
-}
-
-// build creates a single command-line argument (a `Argument` struct) from the builder's state.
+// buildArgument creates a single command-line argument (an `Argument` struct) from the context.
 // It returns nil if the field should be ignored.
-func (b *argumentBuilder) build() (*Argument, error) {
-	if b.isIgnored() {
+func buildArgument(ctx *ArgumentContext) (*Argument, error) {
+	if isArgIgnored(ctx.Field, ctx.Method) {
 		return nil, nil
 	}
 
 	// TODO(https://github.com/googleapis/librarian/issues/3414): Abstract away casing logic in the model.
 	arg := &Argument{
-		ArgName:   b.field.Name,
-		APIField:  b.apiField,
-		Required:  b.field.DocumentAsRequired(),
-		Repeated:  b.repeated(),
-		Clearable: b.clearable(),
-		HelpText:  b.helpText(),
+		ArgName:   ctx.Field.Name,
+		APIField:  ctx.APIField,
+		Required:  ctx.Field.DocumentAsRequired(),
+		Repeated:  repeated(ctx.Field),
+		Clearable: clearable(ctx.Field, ctx.Method),
+		HelpText:  argumentHelpText(ctx.Overrides, ctx.Field),
 	}
 
-	if b.field.ResourceReference != nil {
-		spec, err := b.resourceReferenceSpec()
+	if ctx.Field.ResourceReference != nil {
+		spec, err := resourceReferenceSpec(ctx)
 		if err != nil {
 			return nil, err
 		}
 		arg.ResourceSpec = spec
-	} else if b.field.Map {
-		arg.Spec = b.mapSpec()
-	} else if b.field.EnumType != nil {
-		arg.Choices = b.choices()
+	} else if ctx.Field.Map {
+		arg.Spec = mapSpec()
+	} else if ctx.Field.EnumType != nil {
+		arg.Choices = choices(ctx.Field)
 	} else {
-		arg.Type = provider.GetGcloudType(b.field.Typez)
-		if b.field.Typez == api.TypezBool {
-			if provider.IsUpdate(b.method) {
+		arg.Type = provider.GetGcloudType(ctx.Field.Typez)
+		if ctx.Field.Typez == api.TypezBool {
+			if provider.IsUpdate(ctx.Method) {
 				arg.Action = "store_true_false"
 			} else {
 				arg.Action = "store_true"
@@ -88,44 +75,44 @@ func (b *argumentBuilder) build() (*Argument, error) {
 	return arg, nil
 }
 
-func (b *argumentBuilder) isIgnored() bool {
-	if b.field.Name == "update_mask" {
+func isArgIgnored(field *api.Field, method *api.Method) bool {
+	if field.Name == "update_mask" {
 		return true
 	}
-	if provider.IsList(b.method) {
-		switch b.field.Name {
+	if provider.IsList(method) {
+		switch field.Name {
 		case "page_size", "page_token", "filter", "order_by":
 			return true
 		case "return_partial_success":
 			// Field is available in all APIs due to mixin but not all APIs actually
 			// support it. Omitting for now.
-			return provider.IsOperationsMethod(b.method)
+			return provider.IsOperationsMethod(method)
 		}
 	}
-	if slices.Contains(b.field.Behavior, api.FieldBehaviorOutputOnly) {
+	if slices.Contains(field.Behavior, api.FieldBehaviorOutputOnly) {
 		return true
 	}
-	if provider.IsUpdate(b.method) && slices.Contains(b.field.Behavior, api.FieldBehaviorImmutable) {
+	if provider.IsUpdate(method) && slices.Contains(field.Behavior, api.FieldBehaviorImmutable) {
 		return true
 	}
 	return false
 }
 
-func (b *argumentBuilder) repeated() bool {
-	return b.field.Repeated || b.field.Map
+func repeated(field *api.Field) bool {
+	return field.Repeated || field.Map
 }
 
-func (b *argumentBuilder) clearable() bool {
-	return provider.IsUpdate(b.method) && b.repeated()
+func clearable(field *api.Field, method *api.Method) bool {
+	return provider.IsUpdate(method) && repeated(field)
 }
 
-func (b *argumentBuilder) helpText() string {
-	return provider.GetFieldHelpText(b.overrides, b.field)
+func argumentHelpText(overrides *provider.Config, field *api.Field) string {
+	return provider.GetFieldHelpText(overrides, field)
 }
 
-func (b *argumentBuilder) choices() []Choice {
+func choices(field *api.Field) []Choice {
 	var choices []Choice
-	for _, v := range b.field.EnumType.Values {
+	for _, v := range field.EnumType.Values {
 		// Skip the default "UNSPECIFIED" value.
 		if !strings.HasSuffix(v.Name, "_UNSPECIFIED") {
 			choices = append(choices, Choice{
@@ -138,14 +125,14 @@ func (b *argumentBuilder) choices() []Choice {
 	return choices
 }
 
-func (b *argumentBuilder) mapSpec() []ArgSpec {
+func mapSpec() []ArgSpec {
 	return []ArgSpec{{APIField: "key"}, {APIField: "value"}}
 }
 
-// BuildPrimaryResource creates the main positional resource argument for a command.
+// buildPrimaryResourceArgument creates the main positional resource argument for a command.
 // This is the argument that represents the resource being acted upon (e.g., the instance name).
-func (b *argumentBuilder) buildPrimaryResource(idField *api.Field) Argument {
-	resource := provider.GetResourceForMethod(b.method, b.model)
+func buildPrimaryResourceArgument(ctx *ArgumentContext, idField *api.Field) Argument {
+	resource := provider.GetResourceForMethod(ctx.Method, ctx.Model)
 	var segments []api.PathSegment
 	// TODO(https://github.com/googleapis/librarian/issues/3415): Support multiple resource patterns and multitype resources.
 	if resource != nil && len(resource.Patterns) > 0 {
@@ -153,7 +140,7 @@ func (b *argumentBuilder) buildPrimaryResource(idField *api.Field) Argument {
 	}
 
 	// Grab the parent if it is collection based method unless you have a resource id field.
-	if provider.IsCollectionMethod(b.method) && idField == nil {
+	if provider.IsCollectionMethod(ctx.Method) && idField == nil {
 		segments = provider.GetParentFromSegments(segments)
 	}
 
@@ -162,30 +149,30 @@ func (b *argumentBuilder) buildPrimaryResource(idField *api.Field) Argument {
 
 	// Help text should be documentation of builder.field name.
 	// However, if you have resource id, then you actually want resource.name field.
-	fieldHelpText := b.field.Documentation
+	fieldHelpText := ctx.Field.Documentation
 	if nameField := provider.FindNameField(resource); idField != nil && nameField != nil {
 		fieldHelpText = nameField.Documentation
 	}
 
 	// documentation for LRO service is stripped. Provide fallback.
-	if fieldHelpText == "" && provider.IsOperationsMethod(b.method) {
-		fieldHelpText = provider.OperationMethodDocumentation(b.method.Name)
+	if fieldHelpText == "" && provider.IsOperationsMethod(ctx.Method) {
+		fieldHelpText = provider.OperationMethodDocumentation(ctx.Method.Name)
 	}
 
 	collectionPath := provider.GetCollectionPathFromSegments(segments)
-	hostParts := strings.Split(b.service.DefaultHost, ".")
+	hostParts := strings.Split(ctx.Service.DefaultHost, ".")
 	shortServiceName := hostParts[0]
 
 	param := Argument{
 		HelpText:          provider.CleanDocumentation(fieldHelpText),
-		IsPositional:      !provider.IsList(b.method),
+		IsPositional:      !provider.IsList(ctx.Method),
 		IsPrimaryResource: true,
 		Required:          true,
 		ResourceSpec: &ResourceSpec{
 			Name:                  resourceName,
 			PluralName:            provider.GetPluralFromSegments(segments),
 			Collection:            fmt.Sprintf("%s.%s", shortServiceName, collectionPath),
-			DisableAutoCompleters: provider.IsList(b.method),
+			DisableAutoCompleters: provider.IsList(ctx.Method),
 			Attributes:            newAttributesFromSegments(segments),
 		},
 	}
@@ -199,9 +186,9 @@ func (b *argumentBuilder) buildPrimaryResource(idField *api.Field) Argument {
 
 // resourceReferenceSpec creates a ResourceSpec for a field that references
 // another resource type (e.g., a `--network` flag).
-func (b *argumentBuilder) resourceReferenceSpec() (*ResourceSpec, error) {
-	for _, def := range b.model.ResourceDefinitions {
-		if def.Type == b.field.ResourceReference.Type {
+func resourceReferenceSpec(ctx *ArgumentContext) (*ResourceSpec, error) {
+	for _, def := range ctx.Model.ResourceDefinitions {
+		if def.Type == ctx.Field.ResourceReference.Type {
 			if len(def.Patterns) == 0 {
 				return nil, fmt.Errorf("resource definition for %q has no patterns", def.Type)
 			}
@@ -215,7 +202,7 @@ func (b *argumentBuilder) resourceReferenceSpec() (*ResourceSpec, error) {
 
 			name := provider.GetSingularFromSegments(segments)
 
-			hostParts := strings.Split(b.service.DefaultHost, ".")
+			hostParts := strings.Split(ctx.Service.DefaultHost, ".")
 			shortServiceName := hostParts[0]
 			baseCollectionPath := provider.GetCollectionPathFromSegments(segments)
 			fullCollectionPath := fmt.Sprintf("%s.%s", shortServiceName, baseCollectionPath)
@@ -230,7 +217,7 @@ func (b *argumentBuilder) resourceReferenceSpec() (*ResourceSpec, error) {
 			}, nil
 		}
 	}
-	return nil, fmt.Errorf("resource definition not found for type %q", b.field.ResourceReference.Type)
+	return nil, fmt.Errorf("resource definition not found for type %q", ctx.Field.ResourceReference.Type)
 }
 
 // newAttributesFromSegments parses a structured resource pattern and extracts the attributes

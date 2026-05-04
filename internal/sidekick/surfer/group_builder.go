@@ -23,24 +23,17 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-type groupBuilder struct {
-	model   *api.API
-	config  *provider.Config
-	service *api.Service
+// GroupContext contains the context required to build a command group.
+type GroupContext struct {
+	Model   *api.API
+	Service *api.Service
+	Config  *provider.Config
 }
 
-func newGroupBuilder(model *api.API, service *api.Service, config *provider.Config) *groupBuilder {
-	return &groupBuilder{
-		model:   model,
-		config:  config,
-		service: service,
-	}
-}
-
-func (b *groupBuilder) buildRoot() *CommandGroup {
+func buildRootGroup(ctx *GroupContext) *CommandGroup {
 	// TODO (https://github.com/googleapis/librarian/issues/3033): Use service selector
 	// to look up the help text from the gcloud config.
-	rootName := provider.ResolveRootPackage(b.model)
+	rootName := provider.ResolveRootPackage(ctx.Model)
 	return &CommandGroup{
 		ClassName: rootName,
 		FileName:  rootName,
@@ -50,9 +43,9 @@ func (b *groupBuilder) buildRoot() *CommandGroup {
 	}
 }
 
-func (b *groupBuilder) build(methodPath []string) *CommandGroup {
+func buildGroup(ctx *GroupContext, methodPath []string) *CommandGroup {
 	collectionName := methodPath[len(methodPath)-1]
-	resourceTypeName := provider.GetResourceTypeName(b.model, methodPath)
+	resourceTypeName := provider.GetResourceTypeName(ctx.Model, methodPath)
 
 	helpText := fmt.Sprintf("Manage %s resources.", toTitleCase(resourceTypeName))
 	if resourceTypeName == "" {

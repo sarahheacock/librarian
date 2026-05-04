@@ -467,7 +467,12 @@ func TestNewCommand(t *testing.T) {
 			test.method.Service = service
 			test.method.Model = model
 
-			got, err := buildCommand(test.method, test.overrides, model, service)
+			got, err := buildCommand(&CommandContext{
+				Method:    test.method,
+				Overrides: test.overrides,
+				Model:     model,
+				Service:   service,
+			})
 			if err != nil {
 				t.Fatalf("buildCommand() unexpected error: %v", err)
 			}
@@ -488,7 +493,12 @@ func TestNewCommand_Error(t *testing.T) {
 	service.DefaultHost = "test.googleapis.com"
 	model := api.NewTestAPI([]*api.Message{}, nil, []*api.Service{service})
 
-	_, err := buildCommand(m, &provider.Config{}, model, service)
+	_, err := buildCommand(&CommandContext{
+		Method:    m,
+		Overrides: &provider.Config{},
+		Model:     model,
+		Service:   service,
+	})
 	if err == nil {
 		t.Errorf("build() expected error for nil Service, got nil")
 	}
@@ -754,7 +764,12 @@ func TestCommandBuilderNewArguments(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			args, err := newArguments(test.method, &provider.Config{}, test.model, test.service)
+			args, err := newArguments(&CommandContext{
+				Method:    test.method,
+				Overrides: &provider.Config{},
+				Model:     test.model,
+				Service:   test.service,
+			})
 			if (err != nil) != test.wantErr {
 				t.Fatalf("newArguments() error = %v, wantErr %v", err, test.wantErr)
 			}
@@ -793,7 +808,12 @@ func TestCommandBuilderNewArgumentsDuplicatesError(t *testing.T) {
 		BodyFieldPath: "*",
 	}
 
-	_, err := newArguments(m, &provider.Config{}, api.NewTestAPI([]*api.Message{}, nil, []*api.Service{api.NewTestService("TestService")}), api.NewTestService("TestService"))
+	_, err := newArguments(&CommandContext{
+		Method:    m,
+		Overrides: &provider.Config{},
+		Model:     api.NewTestAPI([]*api.Message{}, nil, []*api.Service{api.NewTestService("TestService")}),
+		Service:   api.NewTestService("TestService"),
+	})
 	if err == nil {
 		t.Errorf("newArguments() expected error for duplicate resource fields, got nil")
 	}
@@ -814,7 +834,12 @@ func TestCommandBuilderNewArgumentsResourceError(t *testing.T) {
 	)
 	badMethod.PathInfo.BodyFieldPath = "bad_nested"
 
-	_, err := newArguments(badMethod, &provider.Config{}, model, service)
+	_, err := newArguments(&CommandContext{
+		Method:    badMethod,
+		Overrides: &provider.Config{},
+		Model:     model,
+		Service:   service,
+	})
 	if err == nil {
 		t.Fatalf("newArguments() expected error, got nil")
 	}
@@ -857,7 +882,12 @@ func TestBuildWaitCommand(t *testing.T) {
 	model := api.NewTestAPI([]*api.Message{}, nil, []*api.Service{service})
 	m.Model = model
 
-	got, err := buildWaitCommand(m, &provider.Config{}, model, service)
+	got, err := buildWaitCommand(&CommandContext{
+		Method:    m,
+		Overrides: &provider.Config{},
+		Model:     model,
+		Service:   service,
+	})
 	if err != nil {
 		t.Fatalf("buildWaitCommand() unexpected error: %v", err)
 	}

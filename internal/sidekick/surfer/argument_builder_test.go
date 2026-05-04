@@ -157,7 +157,14 @@ func TestNewArgument(t *testing.T) {
 			if overrides == nil {
 				overrides = &provider.Config{}
 			}
-			got, err := newArgumentBuilder(test.method, overrides, model, service, test.field, test.apiField).build()
+			got, err := buildArgument(&ArgumentContext{
+				Method:    test.method,
+				Overrides: overrides,
+				Model:     model,
+				Service:   service,
+				Field:     test.field,
+				APIField:  test.apiField,
+			})
 			if err != nil {
 				t.Errorf("newArgument(%s) unexpected error: %v", test.name, err)
 				return
@@ -272,8 +279,7 @@ func TestIsIgnored(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			builder := newArgumentBuilder(test.method, nil, nil, nil, test.field, nil)
-			got := builder.isIgnored()
+			got := isArgIgnored(test.field, test.method)
 			if got != test.want {
 				t.Errorf("isIgnored() = %v, want %v", got, test.want)
 			}
@@ -532,7 +538,12 @@ func TestNewPrimaryResourceArgument(t *testing.T) {
 			if provider.IsCreate(test.method) {
 				idField = test.field
 			}
-			got := newArgumentBuilder(test.method, nil, model, service, test.field, nil).buildPrimaryResource(idField)
+			got := buildPrimaryResourceArgument(&ArgumentContext{
+				Method:  test.method,
+				Model:   model,
+				Service: service,
+				Field:   test.field,
+			}, idField)
 			if diff := cmp.Diff(test.want, got); diff != "" {
 				t.Errorf("newPrimaryResourceArgument() mismatch (-want +got):\n%s", diff)
 			}
@@ -581,8 +592,14 @@ func TestArgumentBuilder_Build(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			builder := newArgumentBuilder(createMethod, &provider.Config{}, model, service, test.field, test.prefix)
-			got, err := builder.build()
+			got, err := buildArgument(&ArgumentContext{
+				Method:    createMethod,
+				Overrides: &provider.Config{},
+				Model:     model,
+				Service:   service,
+				Field:     test.field,
+				APIField:  test.prefix,
+			})
 			if (err != nil) != test.wantErr {
 				t.Fatalf("build() error = %v, wantErr %v", err, test.wantErr)
 			}
@@ -635,7 +652,11 @@ func TestNewResourceReferenceSpec(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			got, err := newArgumentBuilder(nil, nil, model, service, test.field, nil).resourceReferenceSpec()
+			got, err := resourceReferenceSpec(&ArgumentContext{
+				Model:   model,
+				Service: service,
+				Field:   test.field,
+			})
 			if err != nil {
 				t.Fatalf("newResourceReferenceSpec() unexpected error = %v", err)
 			}
@@ -660,7 +681,11 @@ func TestNewResourceReferenceSpec_Error(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			_, err := newArgumentBuilder(nil, nil, &api.API{}, service, test.field, nil).resourceReferenceSpec()
+			_, err := resourceReferenceSpec(&ArgumentContext{
+				Model:   &api.API{},
+				Service: service,
+				Field:   test.field,
+			})
 			if err == nil {
 				t.Fatalf("newResourceReferenceSpec() expected error, got nil")
 			}
