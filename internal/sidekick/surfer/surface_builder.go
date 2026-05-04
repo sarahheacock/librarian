@@ -88,6 +88,16 @@ func insert(root *CommandGroup, params *groupParams, method *api.Method) error {
 	}
 
 	curr.Commands[cmd.Name] = cmd
+
+	// Synthesize a 'wait' command for operations.
+	if provider.IsOperationsServiceMethod(method) && method.Name == provider.GetOperation {
+		waitCmd, err := buildWaitCommand(method, params.config, params.model, params.service)
+		if err != nil {
+			return err
+		}
+		curr.Commands[waitCmd.Name] = waitCmd
+	}
+
 	return nil
 }
 
