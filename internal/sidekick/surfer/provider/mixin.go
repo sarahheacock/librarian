@@ -23,10 +23,14 @@ import (
 const operationResourceType = "longrunning.googleapis.com/Operation"
 
 const (
-	GetOperation    = "GetOperation"
+	// GetOperation is the RPC method name for getting an operation's status.
+	GetOperation = "GetOperation"
+	// CancelOperation is the RPC method name for cancelling an active operation.
 	CancelOperation = "CancelOperation"
+	// DeleteOperation is the RPC method name for deleting a completed operation.
 	DeleteOperation = "DeleteOperation"
-	ListOperations  = "ListOperations"
+	// ListOperations is the RPC method name for listing operations.
+	ListOperations = "ListOperations"
 )
 
 // IsOperationsMethod determines if the method belongs to the long-running operations service.
