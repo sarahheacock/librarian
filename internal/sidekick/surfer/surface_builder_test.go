@@ -237,3 +237,31 @@ func mockService(name string, methods ...*api.Method) *api.Service {
 func boolPtr(b bool) *bool {
 	return &b
 }
+
+func TestSurfaceBuilder_Build_SynthesizeWaitCommand(t *testing.T) {
+	opMethod := mockMethod("GetOperation", "v1/{name=projects/*/locations/*/operations/*}")
+	opMethod.SourceServiceID = ".google.longrunning.Operations"
+	service := mockService("parallelstore.googleapis.com", opMethod)
+
+	model := &api.API{
+		Name:     "parallelstore",
+		Title:    "Parallelstore API",
+		Services: []*api.Service{service},
+	}
+
+	root, err := buildSurface(model, &provider.Config{GenerateOperations: boolPtr(true)})
+	if err != nil {
+		t.Fatalf("build() failed: %v", err)
+	}
+
+	got := flattenTree(root.Root)
+	want := []string{
+		"parallelstore/operations/describe",
+		"parallelstore/operations/wait",
+	}
+
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("flattenTree() mismatch (-want +got) expecting both describe and wait:\n%s", diff)
+	}
+}
+
