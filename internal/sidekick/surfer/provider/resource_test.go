@@ -1029,7 +1029,6 @@ func TestGetAllResources_Warning(t *testing.T) {
 	}
 }
 
-
 func TestBuildInflectionMap(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -1111,4 +1110,3 @@ func TestInflectionsFromPattern(t *testing.T) {
 		})
 	}
 }
-

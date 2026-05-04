@@ -98,7 +98,7 @@ func (b *argumentBuilder) isIgnored() bool {
 			return true
 		case "return_partial_success":
 			// Field is available in all APIs due to mixin but not all APIs actually
-			// support it. Ommitting for now.
+			// support it. Omitting for now.
 			return provider.IsOperationsMethod(b.method)
 		}
 	}

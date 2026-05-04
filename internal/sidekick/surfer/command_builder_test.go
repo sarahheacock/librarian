@@ -908,4 +908,3 @@ func TestBuildWaitCommand(t *testing.T) {
 			want.Arguments[0].HelpText)
 	}
 }
-

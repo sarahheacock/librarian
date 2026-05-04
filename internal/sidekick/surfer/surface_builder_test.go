@@ -264,4 +264,3 @@ func TestSurfaceBuilder_Build_SynthesizeWaitCommand(t *testing.T) {
 		t.Errorf("flattenTree() mismatch (-want +got) expecting both describe and wait:\n%s", diff)
 	}
 }
-

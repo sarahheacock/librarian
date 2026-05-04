@@ -306,5 +306,3 @@ func TestIsOperationsResourceField(t *testing.T) {
 		})
 	}
 }
-
-
