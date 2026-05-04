@@ -53,6 +53,42 @@ func buildCommand(method *api.Method, overrides *provider.Config, model *api.API
 	}, nil
 }
 
+// buildWaitCommand synthesizes a 'wait' command for operations based on GetOperation method.
+func buildWaitCommand(getMethod *api.Method, overrides *provider.Config, model *api.API, service *api.Service) (*Command, error) {
+	arg, err := positionalResourceArg(getMethod, overrides, model, service)
+	if err != nil {
+		return nil, err
+	}
+
+	apiVersion, err := provider.APIVersionFromMethod(getMethod)
+	if err != nil {
+		return nil, err
+	}
+
+	var waitArgs []Argument
+	if arg != nil {
+		arg.HelpText = "The name of the operation resource to wait on."
+		waitArgs = []Argument{*arg}
+	}
+
+	return &Command{
+		Name:   "wait",
+		Hidden: hidden(overrides),
+		HelpText: HelpText{
+			Brief:       "Wait operations",
+			Description: "Wait an operation",
+			Examples:    "To wait the operation, run:\n\n    $ {command}",
+		},
+		APIVersion: apiVersion,
+		Collection: collectionPath(getMethod, service, false),
+		Arguments:  waitArgs,
+		Async: &Async{
+			Collection:            collectionPath(getMethod, service, true),
+			ExtractResourceResult: false,
+		},
+	}, nil
+}
+
 func name(method *api.Method) string {
 	name, err := provider.GetCommandName(method)
 	if err != nil {
@@ -187,6 +223,25 @@ func newArguments(method *api.Method, overrides *provider.Config, model *api.API
 	}
 
 	return args, nil
+}
+
+func positionalResourceArg(method *api.Method, overrides *provider.Config, model *api.API, service *api.Service) (*Argument, error) {
+	cf, err := categorizeFields(method, model)
+	if err != nil {
+		return nil, err
+	}
+
+	if cf.primaryField == nil {
+		return nil, nil
+	}
+
+	var idField *api.Field
+	if cf.resourceIdField != nil {
+		idField = cf.resourceIdField.field
+	}
+
+	arg := newArgumentBuilder(method, overrides, model, service, cf.primaryField.field, cf.primaryField.prefix).buildPrimaryResource(idField)
+	return &arg, nil
 }
 
 // categorizeFields gathers fields from the method input type, expanding the body field
