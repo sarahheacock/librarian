@@ -15,6 +15,9 @@
 package provider
 
 import (
+	"bytes"
+	"log"
+	"os"
 	"strings"
 	"testing"
 
@@ -294,6 +297,16 @@ func TestIsPrimaryResourceField(t *testing.T) {
 			want: true,
 		},
 		{
+			name:  "List Operations Method - Primary Resource Name",
+			field: &api.Field{Name: "name"},
+			method: &api.Method{
+				Name:            "ListOperations",
+				SourceServiceID: ".google.longrunning.Operations",
+				InputType:       &api.Message{},
+			},
+			want: true,
+		},
+		{
 			name:  "Non-Primary Field",
 			field: &api.Field{Name: "display_name"},
 			method: &api.Method{
@@ -479,6 +492,26 @@ func TestGetResourceForMethod(t *testing.T) {
 				},
 			},
 			want: otherResource,
+		},
+		{
+			name: "GetOperation Method - Pre-defined Resource",
+			method: &api.Method{
+				Name:            GetOperation,
+				SourceServiceID: ".google.longrunning.Operations",
+				InputType:       &api.Message{},
+			},
+			resourceDefs: []*api.Resource{
+				{
+					Type:     operationResourceType,
+					Singular: "operation",
+					Plural:   "operations",
+				},
+			},
+			want: &api.Resource{
+				Type:     operationResourceType,
+				Singular: "operation",
+				Plural:   "operations",
+			},
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -882,6 +915,174 @@ func TestGetPluralResourceTypeName(t *testing.T) {
 			got := GetPluralResourceTypeName(model, test.path)
 			if got != test.want {
 				t.Errorf("got %q, want %q", got, test.want)
+			}
+		})
+	}
+}
+
+func TestGetAllResources(t *testing.T) {
+	fileResource := &api.Resource{Type: "example.googleapis.com/File"}
+	messageResource := &api.Resource{Type: "example.googleapis.com/Message"}
+
+	model := &api.API{
+		ResourceDefinitions: []*api.Resource{fileResource},
+		Messages: []*api.Message{
+			{
+				Name:     "MyMessage",
+				Resource: messageResource,
+			},
+		},
+		Services: []*api.Service{
+			{
+				Methods: []*api.Method{
+					{
+						Name:            GetOperation,
+						SourceServiceID: ".google.longrunning.Operations",
+						PathInfo: &api.PathInfo{
+							Bindings: []*api.PathBinding{
+								{
+									PathTemplate: &api.PathTemplate{
+										Segments: []api.PathSegment{
+											*(&api.PathSegment{}).WithLiteral("v1"),
+											*(&api.PathSegment{}).WithLiteral("operations"),
+											*(&api.PathSegment{}).WithVariable(api.NewPathVariable("operation")),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	got := GetAllResources(model)
+
+	if len(got) != 3 {
+		t.Errorf("GetAllResources() returned %d resources, want 3", len(got))
+	}
+
+	expectedTypes := map[string]bool{
+		"example.googleapis.com/File":          true,
+		"example.googleapis.com/Message":       true,
+		"longrunning.googleapis.com/Operation": true,
+	}
+
+	for _, r := range got {
+		if !expectedTypes[r.Type] {
+			t.Errorf("Unexpected resource type: %s", r.Type)
+		}
+	}
+}
+
+func TestGetAllResources_Warning(t *testing.T) {
+	// Capture log output.
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	defer log.SetOutput(os.Stderr)
+
+	fileResource := &api.Resource{Type: "example.googleapis.com/File"}
+
+	// An invalid path variable with a leading wildcard in GetOperation (will trigger inference error).
+	model := &api.API{
+		ResourceDefinitions: []*api.Resource{fileResource},
+		Services: []*api.Service{
+			{
+				Methods: []*api.Method{
+					{
+						Name:            GetOperation,
+						SourceServiceID: ".google.longrunning.Operations",
+						PathInfo: &api.PathInfo{
+							Bindings: []*api.PathBinding{
+								{
+									PathTemplate: &api.PathTemplate{
+										Segments: []api.PathSegment{
+											*(&api.PathSegment{}).WithLiteral("v1"),
+											*(&api.PathSegment{}).WithVariable(
+												api.NewPathVariable("name").
+													WithMatch().
+													WithLiteral("locations").WithMatch(),
+											),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	got := GetAllResources(model)
+
+	// 1. Verify it gracefully skipped the operations resource (length should be 1, just the fileResource).
+	if len(got) != 1 {
+		t.Errorf("GetAllResources() returned %d resources, want 1 (graceful skip)", len(got))
+	}
+
+	// 2. Verify the warning message was logged to stderr.
+	logMsg := buf.String()
+	if !strings.Contains(logMsg, "WARNING: failed to infer operations resource") {
+		t.Errorf("Expected warning log, got: %q", logMsg)
+	}
+}
+
+func TestSingular(t *testing.T) {
+	tests := []struct {
+		name string
+		word string
+		want string
+	}{
+		{
+			name: "Standard projects mapping",
+			word: "projects",
+			want: "project",
+		},
+		{
+			name: "Already singular word stays singular",
+			word: "project",
+			want: "project",
+		},
+		{
+			name: "Plural ies mapping",
+			word: "policies",
+			want: "policy",
+		},
+		{
+			name: "Plural sses mapping",
+			word: "addresses",
+			want: "address",
+		},
+		{
+			name: "Plural databases mapping",
+			word: "databases",
+			want: "database",
+		},
+		{
+			name: "Plural xes mapping",
+			word: "indexes",
+			want: "index",
+		},
+		{
+			name: "Plural ches mapping",
+			word: "branches",
+			want: "branch",
+		},
+		{
+			name: "Plural shes mapping",
+			word: "meshes",
+			want: "mesh",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := singular(tt.word)
+			if got != tt.want {
+				t.Errorf("singular(%q) = %q, want %q", tt.word, got, tt.want)
 			}
 		})
 	}
