@@ -15,6 +15,7 @@
 package provider
 
 import (
+	"log"
 	"path"
 	"strings"
 
@@ -105,6 +106,11 @@ func IsPrimaryResourceField(field *api.Field, method *api.Method) bool {
 		return true
 	}
 
+	// Fallback for operations methods where the primary resource field is named "name".
+	if IsOperationsResourceField(field, method) {
+		return true
+	}
+
 	return false
 }
 
@@ -173,24 +179,16 @@ func GetResourceForMethod(method *api.Method, model *api.API) *api.Resource {
 		}
 	}
 
-	if resourceType == "" {
-		return nil
-	}
-
 	// TODO(https://github.com/googleapis/librarian/issues/3363): Avoid this lookup by linking the ResourceReference
 	// to the Resource definition during model creation or post-processing.
 
 	// Use the API model's indexed maps for an efficient lookup.
-	for _, r := range model.ResourceDefinitions {
-		if r.Type == resourceType {
+	for _, r := range GetAllResources(model) {
+		if resourceType != "" && r.Type == resourceType {
 			return r
 		}
-	}
-
-	// Also check resources defined on messages directly.
-	for _, m := range model.Messages {
-		if m.Resource != nil && m.Resource.Type == resourceType {
-			return m.Resource
+		if resourceType == "" && IsOperationsMethod(method) && r.Type == operationResourceType {
+			return r
 		}
 	}
 
@@ -336,10 +334,43 @@ func GetLiteralSegments(raw []api.PathSegment) []string {
 	return filtered
 }
 
+// GetAllResources returns all resource definitions in the model, including
+// file-level definitions, message-level definitions, and synthetic resources
+// inferred from operations methods.
+func GetAllResources(model *api.API) []*api.Resource {
+	var resources []*api.Resource
+	resources = append(resources, model.ResourceDefinitions...)
+
+	// Add message-level resources if not already present
+	for _, m := range model.Messages {
+		if m.Resource != nil {
+			resources = append(resources, m.Resource)
+		}
+	}
+
+	// Infer operations resources from GetOperation methods
+	for _, s := range model.Services {
+		for _, m := range s.Methods {
+			if m.Name == GetOperation && IsOperationsMethod(m) {
+				res, err := InferOperationResource(m)
+				if err != nil {
+					log.Printf("WARNING: failed to infer operations resource for method %q: %v", m.ID, err)
+					continue
+				}
+				if res != nil {
+					resources = append(resources, res)
+				}
+			}
+		}
+	}
+
+	return resources
+}
+
 // GetResourceForPath looks up the resource definition for a given list of URL path literals.
 func GetResourceForPath(model *api.API, path []string) *api.Resource {
 	target := strings.Join(path, ".")
-	for _, res := range model.ResourceDefinitions {
+	for _, res := range GetAllResources(model) {
 		for _, pattern := range res.Patterns {
 			segments := GetLiteralSegments(pattern)
 			if strings.Join(segments, ".") == target {

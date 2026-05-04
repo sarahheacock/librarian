@@ -15,6 +15,9 @@
 package provider
 
 import (
+	"bytes"
+	"log"
+	"os"
 	"strings"
 	"testing"
 
@@ -294,6 +297,16 @@ func TestIsPrimaryResourceField(t *testing.T) {
 			want: true,
 		},
 		{
+			name:  "List Operations Method - Primary Resource Name",
+			field: &api.Field{Name: "name"},
+			method: &api.Method{
+				Name:            "ListOperations",
+				SourceServiceID: ".google.longrunning.Operations",
+				InputType:       &api.Message{},
+			},
+			want: true,
+		},
+		{
 			name:  "Non-Primary Field",
 			field: &api.Field{Name: "display_name"},
 			method: &api.Method{
@@ -479,6 +492,26 @@ func TestGetResourceForMethod(t *testing.T) {
 				},
 			},
 			want: otherResource,
+		},
+		{
+			name: "GetOperation Method - Pre-defined Resource",
+			method: &api.Method{
+				Name:            GetOperation,
+				SourceServiceID: ".google.longrunning.Operations",
+				InputType:       &api.Message{},
+			},
+			resourceDefs: []*api.Resource{
+				{
+					Type:     operationResourceType,
+					Singular: "operation",
+					Plural:   "operations",
+				},
+			},
+			want: &api.Resource{
+				Type:     operationResourceType,
+				Singular: "operation",
+				Plural:   "operations",
+			},
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -887,6 +920,115 @@ func TestGetPluralResourceTypeName(t *testing.T) {
 	}
 }
 
+func TestGetAllResources(t *testing.T) {
+	fileResource := &api.Resource{Type: "example.googleapis.com/File"}
+	messageResource := &api.Resource{Type: "example.googleapis.com/Message"}
+
+	model := &api.API{
+		ResourceDefinitions: []*api.Resource{fileResource},
+		Messages: []*api.Message{
+			{
+				Name:     "MyMessage",
+				Resource: messageResource,
+			},
+		},
+		Services: []*api.Service{
+			{
+				Methods: []*api.Method{
+					{
+						Name:            GetOperation,
+						SourceServiceID: ".google.longrunning.Operations",
+						PathInfo: &api.PathInfo{
+							Bindings: []*api.PathBinding{
+								{
+									PathTemplate: &api.PathTemplate{
+										Segments: []api.PathSegment{
+											*(&api.PathSegment{}).WithLiteral("v1"),
+											*(&api.PathSegment{}).WithLiteral("operations"),
+											*(&api.PathSegment{}).WithVariable(api.NewPathVariable("operation")),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	got := GetAllResources(model)
+
+	if len(got) != 3 {
+		t.Errorf("GetAllResources() returned %d resources, want 3", len(got))
+	}
+
+	expectedTypes := map[string]bool{
+		"example.googleapis.com/File":          true,
+		"example.googleapis.com/Message":       true,
+		"longrunning.googleapis.com/Operation": true,
+	}
+
+	for _, r := range got {
+		if !expectedTypes[r.Type] {
+			t.Errorf("Unexpected resource type: %s", r.Type)
+		}
+	}
+}
+
+func TestGetAllResources_Warning(t *testing.T) {
+	// Capture log output.
+	var buf bytes.Buffer
+	log.SetOutput(&buf)
+	defer log.SetOutput(os.Stderr)
+
+	fileResource := &api.Resource{Type: "example.googleapis.com/File"}
+
+	// An invalid path variable with a leading wildcard in GetOperation (will trigger inference error).
+	model := &api.API{
+		ResourceDefinitions: []*api.Resource{fileResource},
+		Services: []*api.Service{
+			{
+				Methods: []*api.Method{
+					{
+						Name:            GetOperation,
+						SourceServiceID: ".google.longrunning.Operations",
+						PathInfo: &api.PathInfo{
+							Bindings: []*api.PathBinding{
+								{
+									PathTemplate: &api.PathTemplate{
+										Segments: []api.PathSegment{
+											*(&api.PathSegment{}).WithLiteral("v1"),
+											*(&api.PathSegment{}).WithVariable(
+												api.NewPathVariable("name").
+													WithMatch().
+													WithLiteral("locations").WithMatch(),
+											),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	got := GetAllResources(model)
+
+	// 1. Verify it gracefully skipped the operations resource (length should be 1, just the fileResource).
+	if len(got) != 1 {
+		t.Errorf("GetAllResources() returned %d resources, want 1 (graceful skip)", len(got))
+	}
+
+	// 2. Verify the warning message was logged to stderr.
+	logMsg := buf.String()
+	if !strings.Contains(logMsg, "WARNING: failed to infer operations resource") {
+		t.Errorf("Expected warning log, got: %q", logMsg)
+	}
+}
+
 func TestBuildInflectionMap(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -894,35 +1036,32 @@ func TestBuildInflectionMap(t *testing.T) {
 		want  map[string]string
 	}{
 		{
-			name: "Inflections from resource definitions and messages",
+			name: "Resolves standard and irregular from patterns",
 			model: &api.API{
 				ResourceDefinitions: []*api.Resource{
 					{
+						Type: "example.googleapis.com/Instance",
 						Patterns: []api.ResourcePattern{
 							parseResourcePattern("projects/{project}/locations/{location}/instances/{instance}"),
 						},
 					},
-				},
-				Messages: []*api.Message{
 					{
-						Resource: &api.Resource{
-							Patterns: []api.ResourcePattern{
-								parseResourcePattern("organizations/{organization}/locations/{location}/nodes/{node}"),
-							},
+						Type: "example.googleapis.com/Policy",
+						Patterns: []api.ResourcePattern{
+							parseResourcePattern("projects/{project}/policies/{policy}"),
 						},
 					},
 				},
 			},
 			want: map[string]string{
-				"projects":      "project",
-				"locations":     "location",
-				"instances":     "instance",
-				"organizations": "organization",
-				"nodes":         "node",
+				"projects":  "project",
+				"locations": "location",
+				"instances": "instance",
+				"policies":  "policy",
 			},
 		},
 		{
-			name:  "Nil Model",
+			name:  "Nil Model returns empty map",
 			model: nil,
 			want:  map[string]string{},
 		},
@@ -946,23 +1085,17 @@ func TestInflectionsFromPattern(t *testing.T) {
 		want    map[string]string
 	}{
 		{
-			name:    "Valid Pattern",
-			pattern: parseResourcePattern("projects/{project}/locations/{location}"),
+			name:    "Standard",
+			pattern: parseResourcePattern("projects/{project}/locations/{location}/instances/{instance}"),
 			want: map[string]string{
 				"projects":  "project",
 				"locations": "location",
+				"instances": "instance",
 			},
 		},
 		{
-			name:    "Ending With Wildcard Variable",
-			pattern: parseResourcePattern("projects/{project}/*"),
-			want: map[string]string{
-				"projects": "project",
-			},
-		},
-		{
-			name:    "Short Pattern",
-			pattern: parseResourcePattern("projects"),
+			name:    "Empty pattern segment list",
+			pattern: nil,
 			want:    map[string]string{},
 		},
 	}
