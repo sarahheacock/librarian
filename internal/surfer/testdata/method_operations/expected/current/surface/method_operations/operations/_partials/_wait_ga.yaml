@@ -17,17 +17,16 @@
 - release_tracks:
     - GA
   auto_generated: true
-  hidden: true
   help_text:
-    brief: Describe operations
-    description: Describe an operation
+    brief: Wait operations
+    description: Wait an operation
     examples: |-
-      To describe the operation, run:
+      To wait the operation, run:
 
           $ {command}
   arguments:
     params:
-      - help_text: The name of the operation resource.
+      - help_text: The name of the operation resource to wait on.
         is_positional: true
         is_primary_resource: true
         resource_spec:
@@ -42,7 +41,7 @@
             - attribute_name: operation
               help: The operation id of the {resource} resource.
               parameter_name: operationsId
-          collection: parallelstore.projects.locations.operations
+          collection: methodoperations.projects.locations.operations
           disable_auto_completers: false
           name: operation
           plural_name: operations
@@ -50,4 +49,8 @@
   request:
     api_version: v1
     collection:
-      - parallelstore.projects.locations.operations
+      - methodoperations.projects.locations.operations
+  async:
+    collection:
+      - methodoperations.projects.locations.operations
+    extract_resource_result: false

@@ -26,7 +26,7 @@
           $ {command}
   arguments:
     params:
-      - help_text: ""
+      - help_text: The name of the operation's parent resource.
         is_positional: false
         is_primary_resource: true
         resource_spec:
@@ -43,14 +43,6 @@
           name: location
           plural_name: locations
         required: true
-      - arg_name: return-partial-success
-        api_field: returnPartialSuccess
-        help_text: Value for the `return-partial-success` field.
-        action: store_true
-        is_positional: false
-        required: false
-        type: bool
-        default: null
   request:
     api_version: v1
     collection:
