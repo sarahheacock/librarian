@@ -15,7 +15,7 @@
 package provider
 
 import (
-	"log"
+	"log/slog"
 	"path"
 	"strings"
 
@@ -354,7 +354,7 @@ func getAllResources(model *api.API) []*api.Resource {
 			if IsOperationsServiceMethod(m) && m.Name == GetOperation {
 				res, err := inferOperationResource(m)
 				if err != nil {
-					log.Printf("WARNING: failed to infer operations resource for method %q: %v", m.ID, err)
+					slog.Warn("failed to infer operations resource", "method", m.ID, "error", err)
 					continue
 				}
 				if res != nil {

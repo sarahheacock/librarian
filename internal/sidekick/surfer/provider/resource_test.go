@@ -999,7 +999,7 @@ func Test_getAllResources_Warning(t *testing.T) {
 
 	// 2. Verify the warning message was logged to stderr.
 	logMsg := buf.String()
-	if !strings.Contains(logMsg, "WARNING: failed to infer operations resource") {
+	if !strings.Contains(logMsg, "failed to infer operations resource") {
 		t.Errorf("Expected warning log, got: %q", logMsg)
 	}
 }
