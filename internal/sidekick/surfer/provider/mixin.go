@@ -33,16 +33,9 @@ const (
 	ListOperations = "ListOperations"
 )
 
-// IsOperationsMethod determines if the method belongs to the long-running operations service.
-func IsOperationsMethod(m *api.Method) bool {
+// IsOperationsServiceMethod determines if the method belongs to the long-running operations service.
+func IsOperationsServiceMethod(m *api.Method) bool {
 	return m.SourceServiceID == ".google.longrunning.Operations"
-}
-
-// IsOperationsResourceField determines if the field represents the primary resource of an LRO request.
-// Note: Under LRO conventions, operations methods (like ListOperations) use the field "name"
-// to represent the parent collection or target resource, unlike standard methods which use "parent".
-func IsOperationsResourceField(field *api.Field, method *api.Method) bool {
-	return field.Name == "name" && IsOperationsMethod(method)
 }
 
 // OperationMethodDocumentation returns the fallback help text for operations methods.

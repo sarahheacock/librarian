@@ -168,7 +168,7 @@ func (b *argumentBuilder) buildPrimaryResource(idField *api.Field) Argument {
 	}
 
 	// documentation for LRO service is stripped. Provide fallback.
-	if fieldHelpText == "" && provider.IsOperationsMethod(b.method) {
+	if provider.IsOperationsServiceMethod(b.method) && fieldHelpText == "" {
 		fieldHelpText = provider.OperationMethodDocumentation(b.method.Name)
 	}
 

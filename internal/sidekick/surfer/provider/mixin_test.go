@@ -21,7 +21,7 @@ import (
 	"github.com/googleapis/librarian/internal/sidekick/api"
 )
 
-func TestIsOperationsMethod(t *testing.T) {
+func TestIsOperationsServiceMethod(t *testing.T) {
 	tests := []struct {
 		name   string
 		method *api.Method
@@ -51,8 +51,8 @@ func TestIsOperationsMethod(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			if got := IsOperationsMethod(tt.method); got != tt.want {
-				t.Errorf("IsOperationsMethod() = %v, want %v", got, tt.want)
+			if got := IsOperationsServiceMethod(tt.method); got != tt.want {
+				t.Errorf("IsOperationsServiceMethod() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -237,49 +237,6 @@ func TestInferOperationResource(t *testing.T) {
 			}
 			if diff := cmp.Diff(tt.want, got); diff != "" {
 				t.Errorf("inferOperationResource() mismatch (-want +got):\n%s", diff)
-			}
-		})
-	}
-}
-
-func TestIsOperationsResourceField(t *testing.T) {
-	tests := []struct {
-		name   string
-		field  *api.Field
-		method *api.Method
-		want   bool
-	}{
-		{
-			name:  "Operations Method parent is name",
-			field: &api.Field{Name: "name"},
-			method: &api.Method{
-				SourceServiceID: ".google.longrunning.Operations",
-			},
-			want: true,
-		},
-		{
-			name:  "Operations Method other field is not parent",
-			field: &api.Field{Name: "parent"},
-			method: &api.Method{
-				SourceServiceID: ".google.longrunning.Operations",
-			},
-			want: false,
-		},
-		{
-			name:  "Regular Method name field is not LRO parent",
-			field: &api.Field{Name: "name"},
-			method: &api.Method{
-				SourceServiceID: "google.cloud.test.v1.TestService",
-			},
-			want: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-			if got := IsOperationsResourceField(tt.field, tt.method); got != tt.want {
-				t.Errorf("IsOperationsResourceField() = %v, want %v", got, tt.want)
 			}
 		})
 	}

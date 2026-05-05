@@ -107,7 +107,7 @@ func IsPrimaryResourceField(field *api.Field, method *api.Method) bool {
 	}
 
 	// Fallback for operations methods where the primary resource field is named "name".
-	if IsOperationsResourceField(field, method) {
+	if IsOperationsServiceMethod(method) && field.Name == "name" {
 		return true
 	}
 
@@ -156,7 +156,7 @@ func GetResourceForMethod(method *api.Method, model *api.API) *api.Resource {
 	}
 
 	// Strategy 1: Fast-path for long-running operations methods.
-	if IsOperationsMethod(method) {
+	if IsOperationsServiceMethod(method) {
 		return resourceFromType(model, operationResourceType)
 	}
 
@@ -351,7 +351,7 @@ func getAllResources(model *api.API) []*api.Resource {
 	// Infer operations resources from GetOperation methods
 	for _, s := range model.Services {
 		for _, m := range s.Methods {
-			if m.Name == GetOperation && IsOperationsMethod(m) {
+			if IsOperationsServiceMethod(m) && m.Name == GetOperation {
 				res, err := inferOperationResource(m)
 				if err != nil {
 					log.Printf("WARNING: failed to infer operations resource for method %q: %v", m.ID, err)
