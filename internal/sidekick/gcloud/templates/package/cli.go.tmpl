@@ -1,4 +1,4 @@
-{{!
+{{/*
 Copyright 2026 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-}}
+*/ -}}
 package main
 
 import (
@@ -28,42 +28,28 @@ func main() {
 		Name:  "gcloud",
 		Usage: "Google Cloud CLI",
 		Commands: []*cli.Command{
-			{{#Groups}}
+			{{- range .Groups}}
 			{
-				Name:  "{{Name}}",
-				Usage: "{{Usage}}",
+				Name:  "{{.Name}}",
+				Usage: "{{.Usage}}",
 				Commands: []*cli.Command{
-					{{#Subgroups}}
+					{{- range .Subgroups}}
 					{
-						Name:  "{{Name}}",
-						Usage: "{{Usage}}",
+						Name:  "{{.Name}}",
+						Usage: "{{.Usage}}",
 						Commands: []*cli.Command{
-							{{#Commands}}
-							{
-								Name:  "{{Name}}",
-								Usage: "{{Usage}}",
-								Action: func(ctx context.Context, cmd *cli.Command) error {
-									fmt.Println("Executing {{Name}}...")
-									return nil
-								},
-							},
-							{{/Commands}}
+							{{- range .Commands}}
+							{{template "command" .}},
+							{{- end}}
 						},
 					},
-					{{/Subgroups}}
-					{{#Commands}}
-					{
-						Name:  "{{Name}}",
-						Usage: "{{Usage}}",
-						Action: func(ctx context.Context, cmd *cli.Command) error {
-							fmt.Println("Executing {{Name}}...")
-							return nil
-						},
-					},
-					{{/Commands}}
+					{{- end}}
+					{{- range .Commands}}
+					{{template "command" .}},
+					{{- end}}
 				},
 			},
-			{{/Groups}}
+			{{- end}}
 		},
 	}
 
@@ -72,3 +58,26 @@ func main() {
 		os.Exit(1)
 	}
 }
+
+{{- define "command" -}}
+{
+	Name:  "{{.Name}}",
+	Usage: "{{.Usage}}",
+	{{- if .Flags}}
+	Flags: []cli.Flag{
+		{{- range .Flags}}
+		&cli.{{.Kind}}Flag{Name: "{{.Name}}", Usage: "{{.Usage}}", Required: {{.Required}}},
+		{{- end}}
+	},
+	{{- end}}
+	Action: func(ctx context.Context, cmd *cli.Command) error {
+		{{- if .HasPath}}
+		{{.PathLabel}} := fmt.Sprintf("{{.PathFormat}}", {{.PathFormatArgs}})
+		fmt.Printf("Executing {{.Name}} on %s\n", {{.PathLabel}})
+		{{- else}}
+		fmt.Println("Executing {{.Name}}...")
+		{{- end}}
+		return nil
+	},
+}
+{{- end}}
