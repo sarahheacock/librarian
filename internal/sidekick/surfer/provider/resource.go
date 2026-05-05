@@ -183,8 +183,8 @@ func GetResourceForMethod(method *api.Method, model *api.API) *api.Resource {
 	// to the Resource definition during model creation or post-processing.
 
 	// Use the API model's indexed maps for an efficient lookup.
-	for _, r := range GetAllResources(model) {
-		if resourceType != "" && r.Type == resourceType {
+	for _, r := range getAllResources(model) {
+		if r.Type == resourceType {
 			return r
 		}
 		if resourceType == "" && IsOperationsMethod(method) && r.Type == operationResourceType {
@@ -334,25 +334,18 @@ func GetLiteralSegments(raw []api.PathSegment) []string {
 	return filtered
 }
 
-// GetAllResources returns all resource definitions in the model, including
+// getAllResources returns all resource definitions in the model, including
 // file-level definitions, message-level definitions, and synthetic resources
 // inferred from operations methods.
-func GetAllResources(model *api.API) []*api.Resource {
+func getAllResources(model *api.API) []*api.Resource {
 	var resources []*api.Resource
 	resources = append(resources, model.ResourceDefinitions...)
-
-	// Add message-level resources if not already present
-	for _, m := range model.Messages {
-		if m.Resource != nil {
-			resources = append(resources, m.Resource)
-		}
-	}
 
 	// Infer operations resources from GetOperation methods
 	for _, s := range model.Services {
 		for _, m := range s.Methods {
 			if m.Name == GetOperation && IsOperationsMethod(m) {
-				res, err := InferOperationResource(m)
+				res, err := inferOperationResource(m)
 				if err != nil {
 					log.Printf("WARNING: failed to infer operations resource for method %q: %v", m.ID, err)
 					continue
@@ -370,7 +363,7 @@ func GetAllResources(model *api.API) []*api.Resource {
 // GetResourceForPath looks up the resource definition for a given list of URL path literals.
 func GetResourceForPath(model *api.API, path []string) *api.Resource {
 	target := strings.Join(path, ".")
-	for _, res := range GetAllResources(model) {
+	for _, res := range getAllResources(model) {
 		for _, pattern := range res.Patterns {
 			segments := GetLiteralSegments(pattern)
 			if strings.Join(segments, ".") == target {

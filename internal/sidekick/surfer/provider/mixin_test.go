@@ -230,13 +230,13 @@ func TestInferOperationResource(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			got, err := InferOperationResource(tt.method)
+			got, err := inferOperationResource(tt.method)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("InferOperationResource() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("inferOperationResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if diff := cmp.Diff(tt.want, got); diff != "" {
-				t.Errorf("InferOperationResource() mismatch (-want +got):\n%s", diff)
+				t.Errorf("inferOperationResource() mismatch (-want +got):\n%s", diff)
 			}
 		})
 	}

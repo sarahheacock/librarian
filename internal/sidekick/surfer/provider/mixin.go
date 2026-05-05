@@ -61,8 +61,8 @@ func OperationMethodDocumentation(methodName string) string {
 	return ""
 }
 
-// InferOperationResource creates a synthetic resource for operations based on the method's path.
-func InferOperationResource(m *api.Method) (*api.Resource, error) {
+// inferOperationResource creates a synthetic resource for operations based on the method's path.
+func inferOperationResource(m *api.Method) (*api.Resource, error) {
 	if m.PathInfo == nil || len(m.PathInfo.Bindings) == 0 {
 		return nil, nil
 	}

@@ -402,7 +402,6 @@ func TestIsResourceIdField(t *testing.T) {
 
 func TestGetResourceForMethod(t *testing.T) {
 	instanceResource := &api.Resource{Type: "example.googleapis.com/Instance"}
-	otherResource := &api.Resource{Type: "example.googleapis.com/Other"}
 
 	for _, test := range []struct {
 		name         string
@@ -474,24 +473,6 @@ func TestGetResourceForMethod(t *testing.T) {
 			},
 			resourceDefs: []*api.Resource{instanceResource},
 			want:         nil,
-		},
-		{
-			name: "Resource on Message Directly",
-			method: &api.Method{
-				Name: "GetOther",
-				InputType: &api.Message{
-					Fields: []*api.Field{
-						api.NewTestField("name").WithResourceReference("example.googleapis.com/Other"),
-					},
-				},
-			},
-			messages: []*api.Message{
-				{
-					Name:     "OtherMessage",
-					Resource: otherResource,
-				},
-			},
-			want: otherResource,
 		},
 		{
 			name: "GetOperation Method - Pre-defined Resource",
@@ -920,18 +901,12 @@ func TestGetPluralResourceTypeName(t *testing.T) {
 	}
 }
 
-func TestGetAllResources(t *testing.T) {
+func Test_getAllResources(t *testing.T) {
 	fileResource := &api.Resource{Type: "example.googleapis.com/File"}
 	messageResource := &api.Resource{Type: "example.googleapis.com/Message"}
 
 	model := &api.API{
-		ResourceDefinitions: []*api.Resource{fileResource},
-		Messages: []*api.Message{
-			{
-				Name:     "MyMessage",
-				Resource: messageResource,
-			},
-		},
+		ResourceDefinitions: []*api.Resource{fileResource, messageResource},
 		Services: []*api.Service{
 			{
 				Methods: []*api.Method{
@@ -957,10 +932,10 @@ func TestGetAllResources(t *testing.T) {
 		},
 	}
 
-	got := GetAllResources(model)
+	got := getAllResources(model)
 
 	if len(got) != 3 {
-		t.Errorf("GetAllResources() returned %d resources, want 3", len(got))
+		t.Errorf("getAllResources() returned %d resources, want 3", len(got))
 	}
 
 	expectedTypes := map[string]bool{
@@ -976,7 +951,7 @@ func TestGetAllResources(t *testing.T) {
 	}
 }
 
-func TestGetAllResources_Warning(t *testing.T) {
+func Test_getAllResources_Warning(t *testing.T) {
 	// Capture log output.
 	var buf bytes.Buffer
 	log.SetOutput(&buf)
@@ -1015,11 +990,11 @@ func TestGetAllResources_Warning(t *testing.T) {
 		},
 	}
 
-	got := GetAllResources(model)
+	got := getAllResources(model)
 
 	// 1. Verify it gracefully skipped the operations resource (length should be 1, just the fileResource).
 	if len(got) != 1 {
-		t.Errorf("GetAllResources() returned %d resources, want 1 (graceful skip)", len(got))
+		t.Errorf("getAllResources() returned %d resources, want 1 (graceful skip)", len(got))
 	}
 
 	// 2. Verify the warning message was logged to stderr.
