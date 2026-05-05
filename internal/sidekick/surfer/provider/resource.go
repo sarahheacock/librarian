@@ -155,7 +155,12 @@ func GetResourceForMethod(method *api.Method, model *api.API) *api.Resource {
 		return nil
 	}
 
-	// Strategy 1: For Create (AIP-133) and Update (AIP-134), the request message
+	// Strategy 1: Fast-path for long-running operations methods.
+	if IsOperationsMethod(method) {
+		return resourceFromType(model, operationResourceType)
+	}
+
+	// Strategy 2: For Create (AIP-133) and Update (AIP-134), the request message
 	// usually contains a field that *is* the resource message.
 	for _, f := range method.InputType.Fields {
 		if f.MessageType != nil && f.MessageType.Resource != nil {
@@ -163,7 +168,7 @@ func GetResourceForMethod(method *api.Method, model *api.API) *api.Resource {
 		}
 	}
 
-	// Strategy 2: For Get (AIP-131), Delete (AIP-135), and List (AIP-132), the
+	// Strategy 3: For Get (AIP-131), Delete (AIP-135), and List (AIP-132), the
 	// request message has a `name` or `parent` field with a `(google.api.resource_reference)`.
 	var resourceType string
 	for _, field := range method.InputType.Fields {
@@ -182,16 +187,18 @@ func GetResourceForMethod(method *api.Method, model *api.API) *api.Resource {
 	// TODO(https://github.com/googleapis/librarian/issues/3363): Avoid this lookup by linking the ResourceReference
 	// to the Resource definition during model creation or post-processing.
 
-	// Use the API model's indexed maps for an efficient lookup.
+	return resourceFromType(model, resourceType)
+}
+
+func resourceFromType(model *api.API, resourceType string) *api.Resource {
+	if resourceType == "" {
+		return nil
+	}
 	for _, r := range getAllResources(model) {
 		if r.Type == resourceType {
 			return r
 		}
-		if resourceType == "" && IsOperationsMethod(method) && r.Type == operationResourceType {
-			return r
-		}
 	}
-
 	return nil
 }
 

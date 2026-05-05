@@ -1062,3 +1062,48 @@ func TestSingular(t *testing.T) {
 		})
 	}
 }
+
+func Test_resourceFromType(t *testing.T) {
+	r1 := &api.Resource{Type: "example.googleapis.com/Instance"}
+	r2 := &api.Resource{Type: "example.googleapis.com/Network"}
+	model := &api.API{
+		ResourceDefinitions: []*api.Resource{r1, r2},
+	}
+
+	tests := []struct {
+		name         string
+		resourceType string
+		want         *api.Resource
+	}{
+		{
+			name:         "Find First",
+			resourceType: "example.googleapis.com/Instance",
+			want:         r1,
+		},
+		{
+			name:         "Find Second",
+			resourceType: "example.googleapis.com/Network",
+			want:         r2,
+		},
+		{
+			name:         "Empty Type Returns Nil",
+			resourceType: "",
+			want:         nil,
+		},
+		{
+			name:         "Unknown Type Returns Nil",
+			resourceType: "example.googleapis.com/Unknown",
+			want:         nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := resourceFromType(model, tt.resourceType)
+			if got != tt.want {
+				t.Errorf("resourceFromType() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
