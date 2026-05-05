@@ -33,10 +33,10 @@ func TestGroupBuilder_BuildRoot(t *testing.T) {
 		},
 	}
 
-	group := buildRootGroup(&GroupContext{
-		Model:   model,
-		Service: model.Services[0],
-		Config:  &provider.Config{},
+	group := buildRootGroup(&groupContext{
+		model:   model,
+		service: model.Services[0],
+		config:  &provider.Config{},
 	})
 
 	if group.ClassName != "parallelstore" {
@@ -66,10 +66,10 @@ func TestGroupBuilder_BuildGroup(t *testing.T) {
 		},
 	}
 
-	group := buildGroup(&GroupContext{
-		Model:   model,
-		Service: model.Services[0],
-		Config:  &provider.Config{},
+	group := buildGroup(&groupContext{
+		model:   model,
+		service: model.Services[0],
+		config:  &provider.Config{},
 	}, []string{"instances"})
 
 	if group.ClassName != "instances" {
