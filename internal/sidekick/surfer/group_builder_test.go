@@ -33,7 +33,7 @@ func TestGroupBuilder_BuildRoot(t *testing.T) {
 		},
 	}
 
-	group := buildRootGroup(&groupContext{
+	group := buildRootGroup(&groupParams{
 		model:   model,
 		service: model.Services[0],
 		config:  &provider.Config{},
@@ -66,7 +66,7 @@ func TestGroupBuilder_BuildGroup(t *testing.T) {
 		},
 	}
 
-	group := buildGroup(&groupContext{
+	group := buildGroup(&groupParams{
 		model:   model,
 		service: model.Services[0],
 		config:  &provider.Config{},

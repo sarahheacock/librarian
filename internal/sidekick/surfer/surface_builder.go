@@ -28,18 +28,18 @@ func buildSurface(model *api.API, config *provider.Config) (*Surface, error) {
 	}
 
 	for _, service := range model.Services {
-		ctx := &groupContext{
+		params := &groupParams{
 			model:   model,
 			service: service,
 			config:  config,
 		}
 
 		if root == nil {
-			root = buildRootGroup(ctx)
+			root = buildRootGroup(params)
 		}
 
 		for _, method := range service.Methods {
-			if err := insert(root, ctx, method); err != nil {
+			if err := insert(root, params, method); err != nil {
 				return nil, err
 			}
 		}
@@ -51,8 +51,8 @@ func buildSurface(model *api.API, config *provider.Config) (*Surface, error) {
 // insert traverses the tree and attaches a command leaf node. It resolves the
 // literal path segments of the method and walks the tree, creating missing
 // groups if they do not yet exist.
-func insert(root *CommandGroup, ctx *groupContext, method *api.Method) error {
-	if provider.IsSingletonResourceMethod(method, ctx.model) {
+func insert(root *CommandGroup, params *groupParams, method *api.Method) error {
+	if provider.IsSingletonResourceMethod(method, params.model) {
 		return nil
 	}
 
@@ -68,7 +68,7 @@ func insert(root *CommandGroup, ctx *groupContext, method *api.Method) error {
 
 	curr := root
 	for i, seg := range segments {
-		if isTerminatedSegment(seg, ctx.config) {
+		if isTerminatedSegment(seg, params.config) {
 			return nil
 		}
 		isLeaf := i == len(segments)-1
@@ -77,12 +77,12 @@ func insert(root *CommandGroup, ctx *groupContext, method *api.Method) error {
 		}
 
 		if curr.Groups[seg] == nil {
-			curr.Groups[seg] = buildGroup(ctx, segments[:i+1])
+			curr.Groups[seg] = buildGroup(params, segments[:i+1])
 		}
 		curr = curr.Groups[seg]
 	}
 
-	cmd, err := buildCommand(method, ctx.config, ctx.model, ctx.service)
+	cmd, err := buildCommand(method, params.config, params.model, params.service)
 	if err != nil {
 		return err
 	}
