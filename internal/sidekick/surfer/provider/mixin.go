@@ -108,7 +108,7 @@ func inferLocationResource(m *api.Method) (*api.Resource, error) {
 
 // resourcePatterns parses a method's HTTP bindings to construct resource patterns.
 // For each method pattern like /v1/{name=projects/*/locations/*/operations/*}, create a corresponding
-// resource pattern like /projects/{project}/locations/{location}/operations/{operation}
+// resource pattern like /projects/{project}/locations/{location}/operations/{operation}.
 func resourcePatterns(m *api.Method) ([]api.ResourcePattern, error) {
 	if m.PathInfo == nil || len(m.PathInfo.Bindings) == 0 {
 		return nil, nil
