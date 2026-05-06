@@ -469,7 +469,7 @@ func TestNewCommand(t *testing.T) {
 
 			got, err := newCommand(test.method, test.overrides, model, service)
 			if err != nil {
-				t.Fatalf("newCommand() unexpected error: %v", err)
+				t.Fatal(err)
 			}
 
 			opts := cmpopts.IgnoreFields(Command{}, "Arguments", "Collection", "Method", "HelpText")
