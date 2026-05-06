@@ -255,7 +255,7 @@ func TestSurfaceBuilder_Build_SynthesizeWaitCommand(t *testing.T) {
 		Services: []*api.Service{service},
 	}
 
-	root, err := buildSurface(model, &provider.Config{GenerateOperations: boolPtr(true)})
+	root, err := newSurface(model, &provider.Config{GenerateOperations: boolPtr(true)})
 	if err != nil {
 		t.Fatalf("build() failed: %v", err)
 	}
@@ -274,7 +274,7 @@ func TestSurfaceBuilder_Build_SynthesizeWaitCommand(t *testing.T) {
 func TestSurfaceBuilder_Build_SynthesizeWaitCommand_Warning(t *testing.T) {
 	opMethod := mockMethod("GetOperation", "v1/{name=projects/*/locations/*/operations/*}")
 	opMethod.SourceServiceID = ".google.longrunning.Operations"
-	// Do not add the "name" field to opMethod.InputType.Fields so buildWaitCommand fails.
+	// Do not add the "name" field to opMethod.InputType.Fields so newWaitCommand fails.
 	service := mockService("parallelstore.googleapis.com", opMethod)
 
 	model := &api.API{
@@ -290,7 +290,7 @@ func TestSurfaceBuilder_Build_SynthesizeWaitCommand_Warning(t *testing.T) {
 	slog.SetDefault(slog.New(h))
 	defer slog.SetDefault(oldLogger)
 
-	root, err := buildSurface(model, &provider.Config{GenerateOperations: boolPtr(true)})
+	root, err := newSurface(model, &provider.Config{GenerateOperations: boolPtr(true)})
 	if err != nil {
 		t.Fatalf("build() failed: %v", err)
 	}

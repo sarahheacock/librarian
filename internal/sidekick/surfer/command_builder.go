@@ -53,8 +53,8 @@ func newCommand(method *api.Method, overrides *provider.Config, model *api.API, 
 	}, nil
 }
 
-// buildWaitCommand synthesizes a 'wait' command for operations based on GetOperation method.
-func buildWaitCommand(getMethod *api.Method, overrides *provider.Config, model *api.API, service *api.Service) (*Command, error) {
+// newWaitCommand synthesizes a 'wait' command for operations based on GetOperation method.
+func newWaitCommand(getMethod *api.Method, overrides *provider.Config, model *api.API, service *api.Service) (*Command, error) {
 	arg, err := positionalResourceArg(getMethod, overrides, model, service)
 	if err != nil {
 		return nil, err
@@ -255,7 +255,7 @@ func positionalResourceArg(method *api.Method, overrides *provider.Config, model
 		idField = cf.resourceIdField.field
 	}
 
-	arg := buildPrimaryResourceArgument(&argumentParams{
+	arg := newPrimaryResourceArgument(&argumentParams{
 		method:    method,
 		overrides: overrides,
 		model:     model,

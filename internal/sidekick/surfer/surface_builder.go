@@ -93,7 +93,7 @@ func insert(root *CommandGroup, params *groupParams, method *api.Method) error {
 
 	// Synthesize a 'wait' command for operations.
 	if provider.IsOperationsServiceMethod(method) && method.Name == provider.GetOperation {
-		waitCmd, err := buildWaitCommand(method, params.config, params.model, params.service)
+		waitCmd, err := newWaitCommand(method, params.config, params.model, params.service)
 		if err != nil {
 			slog.Warn("failed to build wait command for operations", "method", method.ID, "error", err)
 		} else {
