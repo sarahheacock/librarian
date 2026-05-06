@@ -78,8 +78,6 @@ func LocationMethodDocumentation(methodName string) string {
 
 // inferOperationResource creates a synthetic resource for operations based on the method's path.
 func inferOperationResource(m *api.Method) (*api.Resource, error) {
-	// For each method pattern like /v1/{name=projects/*/locations/*/operations/*}, create a corresponding
-	// resource pattern like /projects/{project}/locations/{location}/operations/{operation}
 	patterns, err := resourcePatterns(m)
 	if err != nil || len(patterns) == 0 {
 		return nil, err
@@ -95,8 +93,6 @@ func inferOperationResource(m *api.Method) (*api.Resource, error) {
 
 // inferLocationResource creates a synthetic resource for locations based on the method's path.
 func inferLocationResource(m *api.Method) (*api.Resource, error) {
-	// For each method pattern like /v1/{name=projects/*/locations/*}, create a corresponding
-	// resource pattern like /projects/{project}/locations/{location}
 	patterns, err := resourcePatterns(m)
 	if err != nil || len(patterns) == 0 {
 		return nil, err
@@ -111,6 +107,8 @@ func inferLocationResource(m *api.Method) (*api.Resource, error) {
 }
 
 // resourcePatterns parses a method's HTTP bindings to construct resource patterns.
+// For each method pattern like /v1/{name=projects/*/locations/*/operations/*}, create a corresponding
+// resource pattern like /projects/{project}/locations/{location}/operations/{operation}
 func resourcePatterns(m *api.Method) ([]api.ResourcePattern, error) {
 	if m.PathInfo == nil || len(m.PathInfo.Bindings) == 0 {
 		return nil, nil
