@@ -29,26 +29,26 @@
   arguments:
     params:
       - help_text: |-
-          The project and location for which to retrieve instance information,
-          in the format `projects/{project_id}/locations/{location}`.
+          The project and location for which to retrieve instance
+          information, in the format `projects/{project_id}/locations/{location}`.
 
           To retrieve instance information for all locations, use "-" as the value of
           `{location}`.
         is_positional: false
         is_primary_resource: true
         resource_spec:
+          attributes:
+            - attribute_name: project
+              help: The project id of the {resource} resource.
+              parameter_name: projectsId
+              property: core/project
+            - attribute_name: location
+              help: The location id of the {resource} resource.
+              parameter_name: locationsId
+          collection: parallelstore.projects.locations
+          disable_auto_completers: true
           name: location
           plural_name: locations
-          collection: parallelstore.projects.locations
-          attributes:
-            - parameter_name: projectsId
-              attribute_name: project
-              help: The project id of the {resource} resource.
-              property: core/project
-            - parameter_name: locationsId
-              attribute_name: location
-              help: The location id of the {resource} resource.
-          disable_auto_completers: true
         required: true
   request:
     api_version: v1
@@ -56,14 +56,3 @@
       - parallelstore.projects.locations.instances
   response:
     id_field: name
-  output:
-    format: |-
-      table(name,
-            capacityGib:label=Capacity,
-            description,
-            createTime,
-            updateTime,
-            state,
-            network,
-            reserved_ip_range,
-            accessPoints.join(","))
