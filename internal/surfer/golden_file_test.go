@@ -38,6 +38,7 @@ var (
 	// Tests that are enabled by default because they are expected to pass against the target.
 	enabledTargetTests = map[string]bool{
 		"method_async":        true,
+		"method_locations":    true,
 		"method_minimal_list": true,
 		"method_operations":   true,
 		"multi_service":       true,
