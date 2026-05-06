@@ -58,6 +58,43 @@ func TestIsOperationsServiceMethod(t *testing.T) {
 	}
 }
 
+func TestIsLocationsServiceMethod(t *testing.T) {
+	tests := []struct {
+		name   string
+		method *api.Method
+		want   bool
+	}{
+		{
+			name: "Is Locations Method",
+			method: &api.Method{
+				SourceServiceID: ".google.cloud.location.Locations",
+			},
+			want: true,
+		},
+		{
+			name: "Is Regular Method",
+			method: &api.Method{
+				SourceServiceID: "google.cloud.test.v1.TestService",
+			},
+			want: false,
+		},
+		{
+			name:   "Nil Service ID",
+			method: &api.Method{},
+			want:   false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := IsLocationsServiceMethod(tt.method); got != tt.want {
+				t.Errorf("IsLocationsServiceMethod() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestOperationMethodDocumentation(t *testing.T) {
 	tests := []struct {
 		name string
@@ -96,6 +133,39 @@ func TestOperationMethodDocumentation(t *testing.T) {
 			t.Parallel()
 			if got := OperationMethodDocumentation(tt.op); got != tt.want {
 				t.Errorf("OperationMethodDocumentation(%q) = %q, want %q", tt.op, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestLocationMethodDocumentation(t *testing.T) {
+	tests := []struct {
+		name string
+		op   string
+		want string
+	}{
+		{
+			name: "GetLocation",
+			op:   GetLocation,
+			want: "The name of the location resource.",
+		},
+		{
+			name: "ListLocations",
+			op:   ListLocations,
+			want: "The name of the location's parent resource.",
+		},
+		{
+			name: "Unknown",
+			op:   "UnknownOp",
+			want: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := LocationMethodDocumentation(tt.op); got != tt.want {
+				t.Errorf("LocationMethodDocumentation(%q) = %q, want %q", tt.op, got, tt.want)
 			}
 		})
 	}
