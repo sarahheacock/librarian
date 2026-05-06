@@ -15,6 +15,7 @@
 package provider
 
 import (
+	"iter"
 	"log/slog"
 	"path"
 	"strings"
@@ -200,7 +201,7 @@ func resourceFromType(model *api.API, resourceType string) *api.Resource {
 	if resourceType == "" {
 		return nil
 	}
-	for _, r := range getAllResources(model) {
+	for r := range allResources(model) {
 		if r.Type == resourceType {
 			return r
 		}
@@ -347,47 +348,56 @@ func GetLiteralSegments(raw []api.PathSegment) []string {
 	return filtered
 }
 
-// getAllResources returns all resource definitions in the model.
+// allResources yields all resource definitions in the model.
 // This acts as the single source of truth for both path-based and method-based
 // resource lookups, ensuring that synthetic mixin resources (operations, locations)
 // resolve to the exact same definitions across all entry points.
-func getAllResources(model *api.API) []*api.Resource {
-	var resources []*api.Resource
-	resources = append(resources, model.ResourceDefinitions...)
-
-	// Infer operations resources from GetOperation method and location resource from GetLocation method.
-	for _, s := range model.Services {
-		for _, m := range s.Methods {
-			if IsOperationsServiceMethod(m) && m.Name == GetOperation {
-				res, err := inferOperationResource(m)
-				if err != nil {
-					slog.Warn("failed to infer operations resource", "method", m.ID, "error", err)
-					continue
-				}
-				if res != nil {
-					resources = append(resources, res)
-				}
+func allResources(model *api.API) iter.Seq[*api.Resource] {
+	return func(yield func(*api.Resource) bool) {
+		for _, res := range model.ResourceDefinitions {
+			if !yield(res) {
+				return
 			}
-			if IsLocationsServiceMethod(m) && m.Name == GetLocation {
-				res, err := inferLocationResource(m)
-				if err != nil {
-					slog.Warn("failed to infer locations resource", "method", m.ID, "error", err)
-					continue
-				}
-				if res != nil {
-					resources = append(resources, res)
+		}
+
+		// Infer operations resources from GetOperation method and location resource from GetLocation method.
+		for _, s := range model.Services {
+			for _, m := range s.Methods {
+				if res := mixinSyntheticResource(m); res != nil {
+					if !yield(res) {
+						return
+					}
 				}
 			}
 		}
 	}
+}
 
-	return resources
+// mixinSyntheticResource attempts to infer a synthetic resource definition from a mixin method.
+func mixinSyntheticResource(m *api.Method) *api.Resource {
+	if IsOperationsServiceMethod(m) && m.Name == GetOperation {
+		res, err := inferOperationResource(m)
+		if err != nil {
+			slog.Warn("failed to infer operations resource", "method", m.ID, "error", err)
+			return nil
+		}
+		return res
+	}
+	if IsLocationsServiceMethod(m) && m.Name == GetLocation {
+		res, err := inferLocationResource(m)
+		if err != nil {
+			slog.Warn("failed to infer locations resource", "method", m.ID, "error", err)
+			return nil
+		}
+		return res
+	}
+	return nil
 }
 
 // GetResourceForPath looks up the resource definition for a given list of URL path literals.
 func GetResourceForPath(model *api.API, path []string) *api.Resource {
 	target := strings.Join(path, ".")
-	for _, res := range getAllResources(model) {
+	for res := range allResources(model) {
 		for _, pattern := range res.Patterns {
 			segments := GetLiteralSegments(pattern)
 			if strings.Join(segments, ".") == target {
