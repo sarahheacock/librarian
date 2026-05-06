@@ -363,7 +363,7 @@ func allResources(model *api.API) iter.Seq[*api.Resource] {
 		// Infer operations resources from GetOperation method and location resource from GetLocation method.
 		for _, s := range model.Services {
 			for _, m := range s.Methods {
-				if res := mixinSyntheticResource(m); res != nil {
+				if res := inferSyntheticResource(m); res != nil {
 					if !yield(res) {
 						return
 					}
@@ -373,8 +373,8 @@ func allResources(model *api.API) iter.Seq[*api.Resource] {
 	}
 }
 
-// mixinSyntheticResource attempts to infer a synthetic resource definition from a mixin method.
-func mixinSyntheticResource(m *api.Method) *api.Resource {
+// inferSyntheticResource attempts to infer a synthetic resource definition from a mixin method.
+func inferSyntheticResource(m *api.Method) *api.Resource {
 	if IsOperationsServiceMethod(m) && m.Name == GetOperation {
 		res, err := inferOperationResource(m)
 		if err != nil {
