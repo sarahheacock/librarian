@@ -24,7 +24,7 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-func buildCommand(method *api.Method, overrides *provider.Config, model *api.API, service *api.Service) (*Command, error) {
+func newCommand(method *api.Method, overrides *provider.Config, model *api.API, service *api.Service) (*Command, error) {
 	args, err := newArguments(method, overrides, model, service)
 	if err != nil {
 		return nil, err
@@ -208,7 +208,7 @@ func newArguments(method *api.Method, overrides *provider.Config, model *api.API
 		if cf.resourceIdField != nil {
 			idField = cf.resourceIdField.field
 		}
-		arg := buildPrimaryResourceArgument(&argumentParams{
+		arg := newPrimaryResourceArgument(&argumentParams{
 			method:    method,
 			overrides: overrides,
 			model:     model,
@@ -220,7 +220,7 @@ func newArguments(method *api.Method, overrides *provider.Config, model *api.API
 	}
 
 	for _, fwp := range cf.other {
-		arg, err := buildArgument(&argumentParams{
+		arg, err := newArgument(&argumentParams{
 			method:    method,
 			overrides: overrides,
 			model:     model,

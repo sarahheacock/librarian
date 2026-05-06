@@ -52,9 +52,9 @@ func TestSurfaceBuilder_Build_Structure(t *testing.T) {
 		},
 	}
 
-	root, err := buildSurface(model, config)
+	root, err := newSurface(model, config)
 	if err != nil {
-		t.Fatalf("build() failed: %v", err)
+		t.Fatalf("newSurface() failed: %v", err)
 	}
 
 	got := flattenTree(root.Root)
@@ -78,9 +78,9 @@ func TestSurfaceBuilder_Build_Operations_Disabled(t *testing.T) {
 		Services: []*api.Service{service},
 	}
 
-	root, err := buildSurface(model, &provider.Config{GenerateOperations: boolPtr(false)})
+	root, err := newSurface(model, &provider.Config{GenerateOperations: boolPtr(false)})
 	if err != nil {
-		t.Fatalf("build() failed: %v", err)
+		t.Fatalf("newSurface() failed: %v", err)
 	}
 
 	got := flattenTree(root.Root)
@@ -98,9 +98,9 @@ func TestSurfaceBuilder_Build_Operations_Enabled(t *testing.T) {
 		Services: []*api.Service{service},
 	}
 
-	root, err := buildSurface(model, &provider.Config{GenerateOperations: boolPtr(true)})
+	root, err := newSurface(model, &provider.Config{GenerateOperations: boolPtr(true)})
 	if err != nil {
-		t.Fatalf("build() failed: %v", err)
+		t.Fatalf("newSurface() failed: %v", err)
 	}
 
 	got := flattenTree(root.Root)
@@ -123,9 +123,9 @@ func TestSurfaceBuilder_Build_MultipleServices(t *testing.T) {
 		Services: []*api.Service{serviceOne, serviceTwo},
 	}
 
-	root, err := buildSurface(model, &provider.Config{GenerateOperations: boolPtr(true)})
+	root, err := newSurface(model, &provider.Config{GenerateOperations: boolPtr(true)})
 	if err != nil {
-		t.Fatalf("build() failed: %v", err)
+		t.Fatalf("newSurface() failed: %v", err)
 	}
 
 	got := flattenTree(root.Root)
@@ -169,9 +169,9 @@ func TestSurfaceBuilder_Build_HelpTextOverride(t *testing.T) {
 		},
 	}
 
-	root, err := buildSurface(model, config)
+	root, err := newSurface(model, config)
 	if err != nil {
-		t.Fatalf("build() failed: %v", err)
+		t.Fatalf("newSurface() failed: %v", err)
 	}
 
 	instancesGroup, ok := root.Root.Groups["instances"]

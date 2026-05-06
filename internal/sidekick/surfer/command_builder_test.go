@@ -467,9 +467,9 @@ func TestNewCommand(t *testing.T) {
 			test.method.Service = service
 			test.method.Model = model
 
-			got, err := buildCommand(test.method, test.overrides, model, service)
+			got, err := newCommand(test.method, test.overrides, model, service)
 			if err != nil {
-				t.Fatalf("buildCommand() unexpected error: %v", err)
+				t.Fatalf("newCommand() unexpected error: %v", err)
 			}
 
 			opts := cmpopts.IgnoreFields(Command{}, "Arguments", "Collection", "Method", "HelpText")
@@ -488,9 +488,9 @@ func TestNewCommand_Error(t *testing.T) {
 	service.DefaultHost = "test.googleapis.com"
 	model := api.NewTestAPI([]*api.Message{}, nil, []*api.Service{service})
 
-	_, err := buildCommand(m, &provider.Config{}, model, service)
+	_, err := newCommand(m, &provider.Config{}, model, service)
 	if err == nil {
-		t.Errorf("build() expected error for nil Service, got nil")
+		t.Errorf("newCommand() expected error for nil Service, got nil")
 	}
 }
 
