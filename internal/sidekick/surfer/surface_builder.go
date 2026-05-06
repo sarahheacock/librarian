@@ -15,6 +15,8 @@
 package surfer
 
 import (
+	"log/slog"
+
 	"github.com/googleapis/librarian/internal/sidekick/api"
 	"github.com/googleapis/librarian/internal/sidekick/surfer/provider"
 )
@@ -93,9 +95,10 @@ func insert(root *CommandGroup, params *groupParams, method *api.Method) error {
 	if provider.IsOperationsServiceMethod(method) && method.Name == provider.GetOperation {
 		waitCmd, err := buildWaitCommand(method, params.config, params.model, params.service)
 		if err != nil {
-			return err
+			slog.Warn("failed to build wait command for operations", "method", method.ID, "error", err)
+		} else {
+			curr.Commands[waitCmd.Name] = waitCmd
 		}
-		curr.Commands[waitCmd.Name] = waitCmd
 	}
 
 	return nil

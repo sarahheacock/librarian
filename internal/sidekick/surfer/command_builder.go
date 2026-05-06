@@ -60,16 +60,17 @@ func buildWaitCommand(getMethod *api.Method, overrides *provider.Config, model *
 		return nil, err
 	}
 
+	if arg == nil {
+		return nil, fmt.Errorf("missing positional resource argument for wait command")
+	}
+
 	apiVersion, err := provider.APIVersionFromMethod(getMethod)
 	if err != nil {
 		return nil, err
 	}
 
-	var waitArgs []Argument
-	if arg != nil {
-		arg.HelpText = "The name of the operation resource to wait on."
-		waitArgs = []Argument{*arg}
-	}
+	arg.HelpText = "The name of the operation resource to wait on."
+	waitArgs := []Argument{*arg}
 
 	return &Command{
 		Name:   "wait",
@@ -254,7 +255,14 @@ func positionalResourceArg(method *api.Method, overrides *provider.Config, model
 		idField = cf.resourceIdField.field
 	}
 
-	arg := newArgumentBuilder(method, overrides, model, service, cf.primaryField.field, cf.primaryField.prefix).buildPrimaryResource(idField)
+	arg := buildPrimaryResourceArgument(&argumentParams{
+		method:    method,
+		overrides: overrides,
+		model:     model,
+		service:   service,
+		field:     cf.primaryField.field,
+		apiField:  cf.primaryField.prefix,
+	}, idField)
 	return &arg, nil
 }
 
