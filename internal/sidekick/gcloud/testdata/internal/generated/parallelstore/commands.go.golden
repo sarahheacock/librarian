@@ -191,16 +191,38 @@ func Command() *cli.Command {
 					{
 						Name:  "list",
 						Usage: "list locations",
+						Flags: []cli.Flag{
+							&cli.StringFlag{Name: "project", Usage: "The project.", Required: true},
+						},
 						Action: func(ctx context.Context, cmd *cli.Command) error {
-							fmt.Println("Executing list...")
+							parent := fmt.Sprintf("projects/%s", cmd.String("project"))
+							fmt.Printf("Executing list on %s\n", parent)
 							return nil
 						},
 					},
 					{
 						Name:  "describe",
 						Usage: "describe locations",
+						Flags: []cli.Flag{
+							&cli.StringFlag{Name: "project", Usage: "The project.", Required: true},
+							&cli.StringFlag{Name: "location", Usage: "The location.", Required: true},
+						},
 						Action: func(ctx context.Context, cmd *cli.Command) error {
-							fmt.Println("Executing describe...")
+							name := fmt.Sprintf("projects/%s/locations/%s", cmd.String("project"), cmd.String("location"))
+							client, err := parallelstore.NewClient(ctx)
+							if err != nil {
+								return err
+							}
+							defer client.Close()
+							resp, err := client.GetLocation(ctx, &parallelstorepb.GetLocationRequest{Name: name})
+							if err != nil {
+								return err
+							}
+							out, err := protojson.MarshalOptions{Multiline: true, Indent: "  "}.Marshal(resp)
+							if err != nil {
+								return err
+							}
+							fmt.Println(string(out))
 							return nil
 						},
 					},
