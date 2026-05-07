@@ -106,6 +106,7 @@ func TestMarshalCommand(t *testing.T) {
       - arg_name: test-arg
         help_text: ""
         is_positional: false
+        is_primary_resource: false
         required: false
         type: string
 `
