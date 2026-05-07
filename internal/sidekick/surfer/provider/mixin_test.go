@@ -240,7 +240,8 @@ func TestInferOperationResource(t *testing.T) {
 					Bindings: []*api.PathBinding{},
 				},
 			},
-			want: nil,
+			want:    nil,
+			wantErr: true,
 		},
 		{
 			name: "Multiple Bindings (Multitype operations)",
@@ -293,7 +294,36 @@ func TestInferOperationResource(t *testing.T) {
 			method: &api.Method{
 				PathInfo: nil,
 			},
-			want: nil,
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Nil Binding",
+			method: &api.Method{
+				Model: mockModel,
+				PathInfo: &api.PathInfo{
+					Bindings: []*api.PathBinding{
+						nil,
+					},
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Missing PathTemplate",
+			method: &api.Method{
+				Model: mockModel,
+				PathInfo: &api.PathInfo{
+					Bindings: []*api.PathBinding{
+						{
+							PathTemplate: nil,
+						},
+					},
+				},
+			},
+			want:    nil,
+			wantErr: true,
 		},
 	}
 
@@ -307,6 +337,90 @@ func TestInferOperationResource(t *testing.T) {
 			}
 			if diff := cmp.Diff(tt.want, got); diff != "" {
 				t.Errorf("inferOperationResource() mismatch (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestInferLocationResource(t *testing.T) {
+	mockModel := &api.API{
+		ResourceDefinitions: []*api.Resource{
+			{
+				Type: "example.googleapis.com/Instance",
+				Patterns: []api.ResourcePattern{
+					parseResourcePattern("projects/{project}/locations/{location}/instances/{instance}"),
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		name    string
+		method  *api.Method
+		want    *api.Resource
+		wantErr bool
+	}{
+		{
+			name: "Standard Path",
+			method: &api.Method{
+				Model: mockModel,
+				PathInfo: &api.PathInfo{
+					Bindings: []*api.PathBinding{
+						{
+							PathTemplate: &api.PathTemplate{
+								Segments: []api.PathSegment{
+									*(&api.PathSegment{}).WithLiteral("v1"),
+									*(&api.PathSegment{}).WithVariable(
+										api.NewPathVariable("name").
+											WithLiteral("projects").WithMatch().
+											WithLiteral("locations").WithMatch(),
+									),
+								},
+							},
+						},
+					},
+				},
+			},
+			want: &api.Resource{
+				Type:     "locations.googleapis.com/Location",
+				Singular: "location",
+				Plural:   "locations",
+				Patterns: []api.ResourcePattern{
+					parseResourcePattern("projects/{project}/locations/{location}"),
+				},
+			},
+		},
+		{
+			name: "No Bindings",
+			method: &api.Method{
+				Model: mockModel,
+				PathInfo: &api.PathInfo{
+					Bindings: []*api.PathBinding{},
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Path Info Nil",
+			method: &api.Method{
+				PathInfo: nil,
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got, err := inferLocationResource(tt.method)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("inferLocationResource() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Errorf("inferLocationResource() mismatch (-want +got):\n%s", diff)
 			}
 		})
 	}
