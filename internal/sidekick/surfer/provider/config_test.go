@@ -183,3 +183,72 @@ func TestAPI(t *testing.T) {
 		})
 	}
 }
+
+func TestSupportsStarUpdateMasks(t *testing.T) {
+	tBool := true
+	fBool := false
+
+	for _, test := range []struct {
+		name        string
+		config      *Config
+		serviceName string
+		version     string
+		want        bool
+	}{
+		{
+			name:        "Nil Config",
+			config:      nil,
+			serviceName: "parallelstore.googleapis.com",
+			version:     "v1",
+			want:        true,
+		},
+		{
+			name:        "No APIs in Config",
+			config:      &Config{},
+			serviceName: "parallelstore.googleapis.com",
+			version:     "v1",
+			want:        true,
+		},
+		{
+			name: "SupportsStarUpdateMasks omitted (default true)",
+			config: &Config{
+				APIs: []API{
+					{Name: "parallelstore.googleapis.com", APIVersion: "v1"},
+				},
+			},
+			serviceName: "parallelstore.googleapis.com",
+			version:     "v1",
+			want:        true,
+		},
+		{
+			name: "Explicitly set to true",
+			config: &Config{
+				APIs: []API{
+					{Name: "parallelstore.googleapis.com", APIVersion: "v1", SupportsStarUpdateMasks: &tBool},
+				},
+			},
+			serviceName: "parallelstore.googleapis.com",
+			version:     "v1",
+			want:        true,
+		},
+		{
+			name: "Explicitly set to false",
+			config: &Config{
+				APIs: []API{
+					{Name: "parallelstore.googleapis.com", APIVersion: "v1", SupportsStarUpdateMasks: &fBool},
+				},
+			},
+			serviceName: "parallelstore.googleapis.com",
+			version:     "v1",
+			want:        false,
+		},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			got := SupportsStarUpdateMasks(test.config, test.serviceName, test.version)
+			if got != test.want {
+				t.Errorf("SupportsStarUpdateMasks() = %v, want %v", got, test.want)
+			}
+		})
+	}
+}
