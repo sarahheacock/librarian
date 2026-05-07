@@ -51,7 +51,6 @@
         api_field: resourceTwo.resourceTwoField
         help_text: Resource two field.
         is_positional: false
-        is_primary_resource: false
         required: false
   request:
     api_version: v1alpha

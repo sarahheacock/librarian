@@ -30,14 +30,12 @@
         api_field: oauthParams
         help_text: The params returned by non-Google OAuth 2.0 flow redirect.
         is_positional: false
-        is_primary_resource: false
         required: false
         type: arg_object
       - arg_name: google-oauth-params
         api_field: googleOauthParams
         help_text: The params returned by Google OAuth flow redirects.
         is_positional: false
-        is_primary_resource: false
         required: false
         type: arg_object
       - arg_name: account-connector

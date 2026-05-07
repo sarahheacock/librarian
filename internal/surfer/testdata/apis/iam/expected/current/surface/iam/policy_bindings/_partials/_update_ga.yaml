@@ -63,7 +63,6 @@
           The etag for the policy binding.
           If this is provided on update, it must match the server's etag.
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: display-name
         api_field: policyBinding.displayName
@@ -71,7 +70,6 @@
           The description of the policy binding. Must be less than or equal
           to 63 characters.
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: annotations
         api_field: policyBinding.annotations
@@ -80,7 +78,6 @@
           https://google.aip.dev/148#annotations for more details such as format and
           size limitations
         is_positional: false
-        is_primary_resource: false
         required: false
         repeated: true
         clearable: true
@@ -127,7 +124,6 @@
           - iam.googleapis.com/WorkloadPoolIdentity
           - iam.googleapis.com/ServiceAccount
         is_positional: false
-        is_primary_resource: false
         required: false
         type: arg_object
       - arg_name: validate-only
@@ -137,7 +133,6 @@
           actually post it.
         action: store_true_false
         is_positional: false
-        is_primary_resource: false
         required: false
         type: bool
   request:

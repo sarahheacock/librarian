@@ -61,13 +61,11 @@
         api_field: gitRepositoryLink.cloneUri
         help_text: Git Clone URI.
         is_positional: false
-        is_primary_resource: false
         required: true
       - arg_name: labels
         api_field: gitRepositoryLink.labels
         help_text: Labels as key value pairs
         is_positional: false
-        is_primary_resource: false
         required: false
         repeated: true
         spec:
@@ -80,13 +78,11 @@
           other fields, and may be sent on update and delete requests to ensure the
           client has an up-to-date value before proceeding.
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: annotations
         api_field: gitRepositoryLink.annotations
         help_text: Allows clients to store small amounts of arbitrary data.
         is_positional: false
-        is_primary_resource: false
         required: false
         repeated: true
         spec:
@@ -109,14 +105,12 @@
           The request ID must be a valid UUID with the exception that zero UUID is
           not supported (00000000-0000-0000-0000-000000000000).
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: validate-only
         api_field: validateOnly
         help_text: If set, validate the request, but do not actually post it.
         action: store_true
         is_positional: false
-        is_primary_resource: false
         required: false
         type: bool
         default: null

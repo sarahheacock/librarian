@@ -50,7 +50,6 @@
         api_field: archiveResourceOneRequest.stringField
         help_text: String field.
         is_positional: false
-        is_primary_resource: false
         required: false
   request:
     api_version: v1alpha

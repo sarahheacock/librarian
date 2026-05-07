@@ -55,7 +55,6 @@
           `gs://<bucket_name>/<path_inside_bucket>`. The path inside the bucket is
           optional.
         is_positional: false
-        is_primary_resource: false
         required: true
       - arg_name: destination-parallelstore-path
         api_field: importDataRequest.destinationParallelstore.path
@@ -63,7 +62,6 @@
           Root directory path to the Paralellstore filesystem, starting
           with `/`. Defaults to `/` if unset.
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: request-id
         api_field: importDataRequest.requestId
@@ -82,7 +80,6 @@
           The request ID must be a valid UUID with the exception that zero UUID is
           not supported (00000000-0000-0000-0000-000000000000).
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: service-account
         help_text: |-
@@ -119,7 +116,6 @@
         api_field: importDataRequest.metadataOptions.uid
         help_text: The UID preservation behavior.
         is_positional: false
-        is_primary_resource: false
         required: false
         choices:
           - arg_value: uid-skip
@@ -132,7 +128,6 @@
         api_field: importDataRequest.metadataOptions.gid
         help_text: The GID preservation behavior.
         is_positional: false
-        is_primary_resource: false
         required: false
         choices:
           - arg_value: gid-skip
@@ -145,7 +140,6 @@
         api_field: importDataRequest.metadataOptions.mode
         help_text: The mode preservation behavior.
         is_positional: false
-        is_primary_resource: false
         required: false
         choices:
           - arg_value: mode-skip

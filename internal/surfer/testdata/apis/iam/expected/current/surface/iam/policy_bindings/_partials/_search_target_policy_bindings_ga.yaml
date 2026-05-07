@@ -67,7 +67,6 @@
           * `//cloudresourcemanager.googleapis.com/folders/{folder_id}`
           * `//cloudresourcemanager.googleapis.com/organizations/{organization_id}`
         is_positional: false
-        is_primary_resource: false
         required: true
       - arg_name: page-size
         api_field: pageSize
@@ -78,7 +77,6 @@
           If unspecified, at most 50 policy bindings will be returned.
           The maximum value is 1000; values above 1000 will be coerced to 1000.
         is_positional: false
-        is_primary_resource: false
         required: false
         type: int
       - arg_name: page-token
@@ -92,7 +90,6 @@
           `SearchTargetPolicyBindingsRequest` must match the call that provided the
           page token.
         is_positional: false
-        is_primary_resource: false
         required: false
   request:
     api_version: v3

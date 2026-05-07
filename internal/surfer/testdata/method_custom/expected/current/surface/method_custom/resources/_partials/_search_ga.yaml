@@ -47,13 +47,11 @@
         api_field: target
         help_text: Target resource.
         is_positional: false
-        is_primary_resource: false
         required: true
       - arg_name: page-size
         api_field: pageSize
         help_text: The maximum number of resources to send per page.
         is_positional: false
-        is_primary_resource: false
         required: false
         type: int
       - arg_name: page-token
@@ -62,7 +60,6 @@
           The page token: If the next_page_token from a previous response
           is provided, this request will send the subsequent page.
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: service-account
         help_text: The service account to use for the request.

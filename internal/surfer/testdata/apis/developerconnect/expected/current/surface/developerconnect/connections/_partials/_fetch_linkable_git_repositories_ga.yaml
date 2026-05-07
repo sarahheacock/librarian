@@ -55,14 +55,12 @@
         api_field: pageSize
         help_text: Number of results to return in the list. Defaults to 20.
         is_positional: false
-        is_primary_resource: false
         required: false
         type: int
       - arg_name: page-token
         api_field: pageToken
         help_text: Page start.
         is_positional: false
-        is_primary_resource: false
         required: false
   request:
     api_version: v1

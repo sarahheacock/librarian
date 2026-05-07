@@ -55,7 +55,6 @@
         api_field: instance.description
         help_text: The description of the instance. 2048 characters or less.
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: labels
         api_field: instance.labels
@@ -65,7 +64,6 @@
           organizational needs and deployment strategies. See
           https://cloud.google.com/resource-manager/docs/labels-overview for details.
         is_positional: false
-        is_primary_resource: false
         required: false
         repeated: true
         spec:
@@ -78,7 +76,6 @@
           Allowed values are between 12000 and 100000, in multiples of 4000; e.g.,
           12000, 16000, 20000, ...
         is_positional: false
-        is_primary_resource: false
         required: true
         type: long
       - arg_name: network
@@ -142,7 +139,6 @@
             involving a mix of small and large files.
           * `FILE_STRIPE_LEVEL_MAX`: higher throughput performance for larger files.
         is_positional: false
-        is_primary_resource: false
         required: false
         choices:
           - arg_value: file-stripe-level-min
@@ -166,7 +162,6 @@
           * `DIRECTORY_STRIPE_LEVEL_MAX`: recommended for directories with a large
             number of files.
         is_positional: false
-        is_primary_resource: false
         required: false
         choices:
           - arg_value: directory-stripe-level-min
@@ -187,7 +182,6 @@
           * `SCRATCH`: the instance is a scratch instance.
           * `PERSISTENT`: the instance is a persistent instance.
         is_positional: false
-        is_primary_resource: false
         required: false
         choices:
           - arg_value: scratch
@@ -213,7 +207,6 @@
           The request ID must be a valid UUID with the exception that zero UUID is
           not supported (00000000-0000-0000-0000-000000000000).
         is_positional: false
-        is_primary_resource: false
         required: false
   request:
     api_version: v1

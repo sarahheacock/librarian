@@ -57,7 +57,6 @@
           The etag for the principal access boundary.
           If this is provided on update, it must match the server's etag.
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: display-name
         api_field: principalAccessBoundaryPolicy.displayName
@@ -65,7 +64,6 @@
           The description of the principal access boundary policy. Must be
           less than or equal to 63 characters.
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: annotations
         api_field: principalAccessBoundaryPolicy.annotations
@@ -74,7 +72,6 @@
           https://google.aip.dev/148#annotations for more details such as format and
           size limitations
         is_positional: false
-        is_primary_resource: false
         required: false
         repeated: true
         spec:
@@ -84,7 +81,6 @@
         api_field: principalAccessBoundaryPolicy.details
         help_text: The details for the principal access boundary policy.
         is_positional: false
-        is_primary_resource: false
         required: false
         type: arg_object
       - arg_name: validate-only
@@ -94,7 +90,6 @@
           actually post it.
         action: store_true
         is_positional: false
-        is_primary_resource: false
         required: false
         type: bool
         default: null

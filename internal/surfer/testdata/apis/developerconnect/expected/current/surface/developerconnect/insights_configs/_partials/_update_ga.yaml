@@ -56,20 +56,17 @@
           Format:
           projects/{project}/locations/{location}/applications/{application}
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: projects
         api_field: insightsConfig.projects
         help_text: The projects to track with the InsightsConfig.
         is_positional: false
-        is_primary_resource: false
         required: false
         type: arg_object
       - arg_name: artifact-configs
         api_field: insightsConfig.artifactConfigs
         help_text: The artifact configurations of the artifacts that are deployed.
         is_positional: false
-        is_primary_resource: false
         required: false
         repeated: true
         clearable: true
@@ -78,7 +75,6 @@
         api_field: insightsConfig.state
         help_text: Output only. The state of the InsightsConfig.
         is_positional: false
-        is_primary_resource: false
         required: false
         choices:
           - arg_value: pending
@@ -97,7 +93,6 @@
           https://google.aip.dev/148#annotations for more details such as format and
           size limitations.
         is_positional: false
-        is_primary_resource: false
         required: false
         repeated: true
         clearable: true
@@ -108,7 +103,6 @@
         api_field: insightsConfig.labels
         help_text: Set of labels associated with an InsightsConfig.
         is_positional: false
-        is_primary_resource: false
         required: false
         repeated: true
         clearable: true
@@ -132,7 +126,6 @@
           The request ID must be a valid UUID with the exception that zero UUID is
           not supported (00000000-0000-0000-0000-000000000000).
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: allow-missing
         api_field: allowMissing
@@ -144,7 +137,6 @@
           installation_id properties).
         action: store_true_false
         is_positional: false
-        is_primary_resource: false
         required: false
         type: bool
       - arg_name: validate-only
@@ -152,7 +144,6 @@
         help_text: If set, validate the request, but do not actually post it.
         action: store_true_false
         is_positional: false
-        is_primary_resource: false
         required: false
         type: bool
   request:

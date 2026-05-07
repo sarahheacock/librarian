@@ -50,20 +50,17 @@
         api_field: resource.one
         help_text: 'Option #1.'
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: two
         api_field: resource.two
         help_text: 'Option #2.'
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: three
         api_field: resource.three
         help_text: 'Option #3.'
         action: store_true_false
         is_positional: false
-        is_primary_resource: false
         required: false
         type: bool
       - arg_name: labels
@@ -72,7 +69,6 @@
           The labels on the resource, which can be used for categorization.
           similar to Kubernetes resource labels.
         is_positional: false
-        is_primary_resource: false
         required: false
         repeated: true
         clearable: true
@@ -91,7 +87,6 @@
           resource must already exists, and the Not Any wildcard (`!*`) requires that
           it must not.
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: validate-only
         api_field: validateOnly
@@ -100,7 +95,6 @@
           that this request would succeed, but will not actually make changes.
         action: store_true_false
         is_positional: false
-        is_primary_resource: false
         required: false
         type: bool
       - arg_name: request-id
@@ -120,7 +114,6 @@
           The request ID must be a valid UUID with the exception that zero UUID is
           not supported (00000000-0000-0000-0000-000000000000).
         is_positional: false
-        is_primary_resource: false
         required: false
   request:
     api_version: v1

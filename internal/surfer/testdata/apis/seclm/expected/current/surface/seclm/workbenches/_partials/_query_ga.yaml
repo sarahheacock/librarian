@@ -61,7 +61,6 @@
           Useful to set for multi-turn conversations, otherwise can be left blank
           or unset.
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: contents-parts
         api_field: workbenchQueryRequest.contents.parts
@@ -69,7 +68,6 @@
           Ordered `Parts` that constitute a single message. Parts may have
           different IANA MIME types.
         is_positional: false
-        is_primary_resource: false
         required: true
         repeated: true
         type: arg_object
@@ -77,7 +75,6 @@
         api_field: workbenchQueryRequest.safetySettings.category
         help_text: The category for this setting.
         is_positional: false
-        is_primary_resource: false
         required: true
         choices:
           - arg_value: harm-category-hate-speech
@@ -96,7 +93,6 @@
         api_field: workbenchQueryRequest.safetySettings.threshold
         help_text: Controls the probability threshold at which harm is blocked.
         is_positional: false
-        is_primary_resource: false
         required: true
         choices:
           - arg_value: block-low-and-above

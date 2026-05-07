@@ -188,10 +188,10 @@ func (d Default) MarshalYAML() (any, error) {
 type Arguments struct {
 	// Params is the ordered list of arguments the command accepts. Each entry
 	// becomes either a positional argument or a flag.
-	Params []Argument `yaml:"params,omitempty"`
+	Params []any `yaml:"params,omitempty"`
 }
 
-// Argument describes a single command argument.
+// Argument describes a standard command argument (scalar flag or positional).
 type Argument struct {
 	// ArgName is the name of the argument as it appears to the user, such as
 	// instance-id. For flags gcloud prepends --.
@@ -208,6 +208,47 @@ type Argument struct {
 	// Action overrides the argparse action used for the argument, for example
 	// store_true or store_true_false. Typically used with boolean fields.
 	Action string `yaml:"action,omitempty"`
+
+	// IsPositional makes the argument positional rather than a flag.
+	IsPositional bool `yaml:"is_positional"`
+
+	// Required makes the argument mandatory. gcloud rejects invocations that
+	// leave it unset.
+	Required bool `yaml:"required"`
+
+	// Repeated accepts more than one value for the argument and maps to a
+	// repeated API field.
+	Repeated bool `yaml:"repeated,omitempty"`
+
+	// Clearable causes gcloud to also generate companion flags such as
+	// --clear-..., --add-..., and --remove-... on update commands.
+	Clearable bool `yaml:"clearable,omitempty"`
+
+	// Type selects the gcloud argument parser, for example long, double, or a
+	// fully-qualified reference to an ArgDict or ArgList parser.
+	Type string `yaml:"type,omitempty"`
+
+	// Default is the value used when the user does not supply the argument.
+	Default Default `yaml:"default,omitempty"`
+
+	// Choices is the fixed set of values the user can supply. Used for
+	// enum-typed fields; each choice maps an arg_value to an enum_value.
+	Choices []Choice `yaml:"choices,omitempty"`
+
+	// Spec lists the sub-fields of a structured argument such as a map. For a
+	// map field, Spec typically contains entries for key and value.
+	Spec []ArgSpec `yaml:"spec,omitempty"`
+}
+
+// ResourceArg describes a concept-resource command argument.
+type ResourceArg struct {
+	// ArgName is the name of the argument as it appears to the user, such as
+	// instance. For flags gcloud prepends --.
+	ArgName string `yaml:"arg_name,omitempty"`
+
+	// HelpText is the help text shown for the argument in gcloud help and
+	// error messages.
+	HelpText string `yaml:"help_text"`
 
 	// IsPositional makes the argument positional rather than a flag.
 	IsPositional bool `yaml:"is_positional"`
@@ -235,17 +276,6 @@ type Argument struct {
 	// Clearable causes gcloud to also generate companion flags such as
 	// --clear-..., --add-..., and --remove-... on update commands.
 	Clearable bool `yaml:"clearable,omitempty"`
-
-	// Type selects the gcloud argument parser, for example long, double, or a
-	// fully-qualified reference to an ArgDict or ArgList parser.
-	Type string `yaml:"type,omitempty"`
-
-	// Default is the value used when the user does not supply the argument.
-	Default Default `yaml:"default,omitempty"`
-
-	// Choices is the fixed set of values the user can supply. Used for
-	// enum-typed fields; each choice maps an arg_value to an enum_value.
-	Choices []Choice `yaml:"choices,omitempty"`
 
 	// Spec lists the sub-fields of a structured argument such as a map. For a
 	// map field, Spec typically contains entries for key and value.

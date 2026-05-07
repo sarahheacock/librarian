@@ -51,34 +51,29 @@
         api_field: resource.stringField
         help_text: String field.
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: uint-field
         api_field: resource.uintField
         help_text: Uint field.
         is_positional: false
-        is_primary_resource: false
         required: false
         type: int
       - arg_name: int-field
         api_field: resource.intField
         help_text: Int field.
         is_positional: false
-        is_primary_resource: false
         required: false
         type: int
       - arg_name: bytes-field
         api_field: resource.bytesField
         help_text: Bytes field.
         is_positional: false
-        is_primary_resource: false
         required: false
         type: bytes
       - arg_name: float-field
         api_field: resource.floatField
         help_text: Float field.
         is_positional: false
-        is_primary_resource: false
         required: false
         type: float
       - arg_name: bool-field
@@ -86,7 +81,6 @@
         help_text: Bool field.
         action: store_true
         is_positional: false
-        is_primary_resource: false
         required: false
         type: bool
         default: null
@@ -95,7 +89,6 @@
         help_text: Bool field.
         action: store_true
         is_positional: false
-        is_primary_resource: false
         required: true
         type: bool
         default: null
@@ -103,14 +96,12 @@
         api_field: resource.bytesFileField
         help_text: Bytes file field.
         is_positional: false
-        is_primary_resource: false
         required: false
         type: bytes
       - arg_name: string-file-field
         api_field: resource.stringFileField
         help_text: String file field.
         is_positional: false
-        is_primary_resource: false
         required: false
       - arg_name: labels
         api_field: resource.labels
@@ -118,7 +109,6 @@
           The labels on the resource, which can be used for categorization.
           similar to Kubernetes resource labels.
         is_positional: false
-        is_primary_resource: false
         required: false
         repeated: true
         spec:
@@ -131,7 +121,6 @@
           that this request would succeed, but will not actually make changes.
         action: store_true
         is_positional: false
-        is_primary_resource: false
         required: false
         type: bool
         default: null
@@ -152,7 +141,6 @@
           The request ID must be a valid UUID with the exception that zero UUID is
           not supported (00000000-0000-0000-0000-000000000000).
         is_positional: false
-        is_primary_resource: false
         required: false
   request:
     api_version: v1
