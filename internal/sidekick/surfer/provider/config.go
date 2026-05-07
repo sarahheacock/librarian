@@ -286,9 +286,6 @@ func ShouldGenerateOperations(c *Config) bool {
 // SupportsStarUpdateMasks returns true if the API/Service supports '*' updateMasks.
 // It matches the service name and API version and defaults to true if omitted.
 func SupportsStarUpdateMasks(c *Config, serviceName, version string) bool {
-	if c == nil {
-		return true
-	}
 	apiConfig := c.API(serviceName, version)
 	if apiConfig == nil {
 		return true
