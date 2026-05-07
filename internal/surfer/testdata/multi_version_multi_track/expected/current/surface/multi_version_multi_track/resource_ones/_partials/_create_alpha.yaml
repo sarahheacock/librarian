@@ -51,6 +51,7 @@
         api_field: resourceOne.resourceOneField
         help_text: Resource one field.
         is_positional: false
+        is_primary_resource: false
         required: false
   request:
     api_version: v1alpha

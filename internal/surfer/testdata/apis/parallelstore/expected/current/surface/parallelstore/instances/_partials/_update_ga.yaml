@@ -54,6 +54,7 @@
         api_field: instance.description
         help_text: The description of the instance. 2048 characters or less.
         is_positional: false
+        is_primary_resource: false
         required: false
       - arg_name: labels
         api_field: instance.labels
@@ -63,6 +64,7 @@
           organizational needs and deployment strategies. See
           https://cloud.google.com/resource-manager/docs/labels-overview for details.
         is_positional: false
+        is_primary_resource: false
         required: false
         repeated: true
         clearable: true
@@ -86,6 +88,7 @@
           The request ID must be a valid UUID with the exception that zero UUID is
           not supported (00000000-0000-0000-0000-000000000000).
         is_positional: false
+        is_primary_resource: false
         required: false
   request:
     api_version: v1

@@ -51,6 +51,7 @@
         api_field: resource.sharedResourceField
         help_text: Shared resource field.
         is_positional: false
+        is_primary_resource: false
         required: false
   request:
     api_version: v1

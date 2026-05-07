@@ -63,12 +63,14 @@
           The request ID must be a valid UUID with the exception that zero UUID is
           not supported (00000000-0000-0000-0000-000000000000).
         is_positional: false
+        is_primary_resource: false
         required: false
       - arg_name: validate-only
         api_field: validateOnly
         help_text: If set, validate the request, but do not actually post it.
         action: store_true
         is_positional: false
+        is_primary_resource: false
         required: false
         type: bool
         default: null
@@ -80,6 +82,7 @@
           AccountConnector, deletion will be blocked and an ABORTED error will be
           returned.
         is_positional: false
+        is_primary_resource: false
         required: false
       - arg_name: force
         api_field: force
@@ -89,6 +92,7 @@
           has no Users.)
         action: store_true
         is_positional: false
+        is_primary_resource: false
         required: false
         type: bool
         default: null

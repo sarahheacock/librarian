@@ -55,6 +55,7 @@
         api_field: resource.displayName
         help_text: A standard field for the resource.
         is_positional: false
+        is_primary_resource: false
         required: false
       - arg_name: detail
         api_field: resource.detail
@@ -62,6 +63,7 @@
           Input only. A field that's explicitly marked input only and
           optional.
         is_positional: false
+        is_primary_resource: false
         required: false
       - arg_name: multiline
         api_field: resource.multiline
@@ -70,11 +72,13 @@
           Here is a second line.
           And here is a third line.
         is_positional: false
+        is_primary_resource: false
         required: false
       - arg_name: enum-type
         api_field: resource.enumType
         help_text: An enum field.
         is_positional: false
+        is_primary_resource: false
         required: false
         choices:
           - arg_value: option-a
@@ -87,30 +91,35 @@
         api_field: resource.integerField
         help_text: An integer field.
         is_positional: false
+        is_primary_resource: false
         required: false
         type: int
       - arg_name: long-field
         api_field: resource.longField
         help_text: A long field.
         is_positional: false
+        is_primary_resource: false
         required: false
         type: long
       - arg_name: double-field
         api_field: resource.doubleField
         help_text: A double field.
         is_positional: false
+        is_primary_resource: false
         required: false
         type: float
       - arg_name: date-time
         api_field: resource.dateTime
         help_text: A datetime field.
         is_positional: false
+        is_primary_resource: false
         required: false
         type: arg_object
       - arg_name: my-duration
         api_field: resource.myDuration
         help_text: A repeated duration field.
         is_positional: false
+        is_primary_resource: false
         required: false
         repeated: true
         type: arg_object
@@ -120,6 +129,7 @@
           The labels on the resource, which can be used for categorization.
           similar to Kubernetes resource labels.
         is_positional: false
+        is_primary_resource: false
         required: false
         repeated: true
         spec:
@@ -132,6 +142,7 @@
           that this request would succeed, but will not actually make changes.
         action: store_true
         is_positional: false
+        is_primary_resource: false
         required: false
         type: bool
         default: null
@@ -152,6 +163,7 @@
           The request ID must be a valid UUID with the exception that zero UUID is
           not supported (00000000-0000-0000-0000-000000000000).
         is_positional: false
+        is_primary_resource: false
         required: false
   request:
     api_version: v1

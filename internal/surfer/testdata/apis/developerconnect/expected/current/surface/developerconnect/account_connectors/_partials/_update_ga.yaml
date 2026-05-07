@@ -52,12 +52,14 @@
         api_field: accountConnector.providerOauthConfig
         help_text: Provider OAuth config.
         is_positional: false
+        is_primary_resource: false
         required: false
         type: arg_object
       - arg_name: annotations
         api_field: accountConnector.annotations
         help_text: Allows users to store small amounts of arbitrary data.
         is_positional: false
+        is_primary_resource: false
         required: false
         repeated: true
         clearable: true
@@ -71,11 +73,13 @@
           other fields, and may be sent on update and delete requests to ensure the
           client has an up-to-date value before proceeding.
         is_positional: false
+        is_primary_resource: false
         required: false
       - arg_name: labels
         api_field: accountConnector.labels
         help_text: Labels as key value pairs
         is_positional: false
+        is_primary_resource: false
         required: false
         repeated: true
         clearable: true
@@ -99,6 +103,7 @@
           The request ID must be a valid UUID with the exception that zero UUID is
           not supported (00000000-0000-0000-0000-000000000000).
         is_positional: false
+        is_primary_resource: false
         required: false
       - arg_name: allow-missing
         api_field: allowMissing
@@ -109,6 +114,7 @@
           all the necessary
         action: store_true_false
         is_positional: false
+        is_primary_resource: false
         required: false
         type: bool
       - arg_name: validate-only
@@ -116,6 +122,7 @@
         help_text: If set, validate the request, but do not actually post it.
         action: store_true_false
         is_positional: false
+        is_primary_resource: false
         required: false
         type: bool
   request:

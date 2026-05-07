@@ -53,6 +53,7 @@
           The labels on the resource, which can be used for categorization.
           similar to Kubernetes resource labels.
         is_positional: false
+        is_primary_resource: false
         required: false
         repeated: true
         spec:
@@ -62,11 +63,13 @@
         api_field: visibleResource.hiddenField
         help_text: Hidden field.
         is_positional: false
+        is_primary_resource: false
         required: false
       - arg_name: hidden-message-field
         api_field: visibleResource.hiddenMessageField
         help_text: Hidden message field.
         is_positional: false
+        is_primary_resource: false
         required: false
         type: arg_object
       - arg_name: validate-only
@@ -76,6 +79,7 @@
           that this request would succeed, but will not actually make changes.
         action: store_true
         is_positional: false
+        is_primary_resource: false
         required: false
         type: bool
         default: null
@@ -86,6 +90,7 @@
           so that if you must retry your request, the server will know to ignore
           the request if it has already
         is_positional: false
+        is_primary_resource: false
         required: false
   request:
     api_version: v1

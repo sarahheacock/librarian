@@ -31,6 +31,7 @@
           The resource name of GitRepositoryLink in the format
           `projects/*/locations/*/connections/*/gitRepositoryLinks/*`.
         is_positional: false
+        is_primary_resource: false
         resource_spec:
           attributes:
             - attribute_name: project
@@ -57,6 +58,7 @@
         api_field: refType
         help_text: Type of refs to fetch.
         is_positional: false
+        is_primary_resource: false
         required: true
         choices:
           - arg_value: tag
@@ -69,12 +71,14 @@
         api_field: pageSize
         help_text: Number of results to return in the list. Default to 20.
         is_positional: false
+        is_primary_resource: false
         required: false
         type: int
       - arg_name: page-token
         api_field: pageToken
         help_text: Page start.
         is_positional: false
+        is_primary_resource: false
         required: false
   request:
     api_version: v1

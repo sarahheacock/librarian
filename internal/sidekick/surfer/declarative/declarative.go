@@ -214,7 +214,7 @@ type Argument struct {
 
 	// IsPrimaryResource marks this argument as the primary resource the
 	// command operates on. At most one argument per command may set this.
-	IsPrimaryResource bool `yaml:"is_primary_resource,omitempty"`
+	IsPrimaryResource bool `yaml:"is_primary_resource"`
 
 	// RequestIDField is the request-message field that receives the
 	// user-supplied resource ID on a create command, for example instanceId.

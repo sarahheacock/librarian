@@ -51,6 +51,7 @@
           unavailable.
         action: store_true
         is_positional: false
+        is_primary_resource: false
         required: false
         type: bool
         default: null

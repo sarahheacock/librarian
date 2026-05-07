@@ -60,6 +60,7 @@
           The etag of the policy binding.
           If this is provided, it must match the server's etag.
         is_positional: false
+        is_primary_resource: false
         required: false
       - arg_name: validate-only
         api_field: validateOnly
@@ -68,6 +69,7 @@
           actually post it.
         action: store_true
         is_positional: false
+        is_primary_resource: false
         required: false
         type: bool
         default: null
