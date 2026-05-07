@@ -80,7 +80,7 @@
               parameter_name: anotherReferencesId
           collection: resourcereference.projects.anotherReferences
           disable_auto_completers: true
-          name: another_reference
+          name: anotherReference
           plural_name: anotherReferences
         required: false
         resource_method_params:
@@ -118,7 +118,7 @@
               parameter_name: anotherMultiReferencesId
           collection: resourcereference.projects.anotherMultiReferences
           disable_auto_completers: true
-          name: another_multi_reference
+          name: anotherMultiReference
           plural_name: anotherMultiReferences
         required: false
         resource_method_params:

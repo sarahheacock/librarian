@@ -47,7 +47,7 @@
               parameter_name: principalAccessBoundaryPoliciesId
           collection: iam.organizations.locations.principalAccessBoundaryPolicies
           disable_auto_completers: false
-          name: principal_access_boundary_policy
+          name: principalAccessBoundaryPolicy
           plural_name: principalAccessBoundaryPolicies
         required: true
       - arg_name: etag

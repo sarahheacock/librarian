@@ -229,8 +229,8 @@ func mapResourceSpecToYAML(spec *ResourceSpec) *declarative.ResourceSpec {
 		})
 	}
 	return &declarative.ResourceSpec{
-		Name:                  spec.Name,
-		PluralName:            spec.PluralName,
+		Name:                  strcase.ToLowerCamel(spec.Name),
+		PluralName:            strcase.ToLowerCamel(spec.PluralName),
 		Collection:            spec.Collection,
 		Attributes:            attrs,
 		DisableAutoCompleters: spec.DisableAutoCompleters,

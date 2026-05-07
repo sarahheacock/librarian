@@ -58,7 +58,7 @@
               parameter_name: policyBindingsId
           collection: iam.organizations.locations.policyBindings
           disable_auto_completers: false
-          name: policy_binding
+          name: policyBinding
           plural_name: policyBindings
         required: true
       - arg_name: etag

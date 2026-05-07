@@ -175,8 +175,8 @@ func TestMapCommandToYAML(t *testing.T) {
 					{ArgValue: "av", EnumValue: "ev", HelpText: "ch"},
 				},
 				ResourceSpec: &ResourceSpec{
-					Name:       "n",
-					PluralName: "pn",
+					Name:       "resource_name",
+					PluralName: "resource_plural",
 					Collection: "c",
 					Attributes: []Attribute{
 						{AttributeName: "attributeName"},
@@ -199,7 +199,7 @@ func TestMapCommandToYAML(t *testing.T) {
 				Type:     "str",
 				APIField: []string{"Part1", "Part2"},
 				ResourceSpec: &ResourceSpec{
-					Name: "r",
+					Name: "nested_resource",
 				},
 			},
 		},
@@ -250,8 +250,8 @@ func TestMapCommandToYAML(t *testing.T) {
 						{ArgValue: "av", EnumValue: "ev", HelpText: "ch"},
 					},
 					ResourceSpec: &declarative.ResourceSpec{
-						Name:       "n",
-						PluralName: "pn",
+						Name:       "resourceName",
+						PluralName: "resourcePlural",
 						Collection: "c",
 						Attributes: []declarative.Attribute{
 							{AttributeName: "attribute_name"},
@@ -272,7 +272,7 @@ func TestMapCommandToYAML(t *testing.T) {
 				{
 					ArgName: "arg-with-apifield-and-resource",
 					ResourceSpec: &declarative.ResourceSpec{
-						Name: "r",
+						Name: "nestedResource",
 					},
 					ResourceMethodParams: map[string]string{
 						"part1.part2": "{__relative_name__}",
