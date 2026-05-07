@@ -79,8 +79,11 @@ func LocationMethodDocumentation(methodName string) string {
 // inferOperationResource creates a synthetic resource for operations based on the method's path.
 func inferOperationResource(m *api.Method) (*api.Resource, error) {
 	patterns, err := resourcePatterns(m)
-	if err != nil || len(patterns) == 0 {
+	if err != nil {
 		return nil, err
+	}
+	if len(patterns) == 0 {
+		return nil, fmt.Errorf("operations mixin method %s has no HTTP path bindings", m.ID)
 	}
 
 	return &api.Resource{
@@ -94,8 +97,11 @@ func inferOperationResource(m *api.Method) (*api.Resource, error) {
 // inferLocationResource creates a synthetic resource for locations based on the method's path.
 func inferLocationResource(m *api.Method) (*api.Resource, error) {
 	patterns, err := resourcePatterns(m)
-	if err != nil || len(patterns) == 0 {
+	if err != nil {
 		return nil, err
+	}
+	if len(patterns) == 0 {
+		return nil, fmt.Errorf("locations mixin method %s has no HTTP path bindings", m.ID)
 	}
 
 	return &api.Resource{
@@ -140,8 +146,11 @@ func resourcePatterns(m *api.Method) ([]api.ResourcePattern, error) {
 //  2. Expanding complex, multi-level nested variables (e.g., "{name=projects/*/locations/*}")
 //     into alternating literal and wildcard variables (e.g., "projects", "{project}", "locations", "{location}").
 func expandBinding(binding *api.PathBinding) ([]api.PathSegment, error) {
-	if binding == nil || binding.PathTemplate == nil {
-		return nil, nil
+	if binding == nil {
+		return nil, fmt.Errorf("nil PathBinding")
+	}
+	if binding.PathTemplate == nil {
+		return nil, fmt.Errorf("missing PathTemplate in PathBinding")
 	}
 
 	var expandedSegments []api.PathSegment
