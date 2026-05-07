@@ -120,32 +120,65 @@ func TestFindFieldHelpTextRule(t *testing.T) {
 	}
 }
 
-func TestAPIVersion(t *testing.T) {
+func TestAPI(t *testing.T) {
+	api1 := API{Name: "parallelstore.googleapis.com", APIVersion: "v1"}
+	api2 := API{Name: "parallelstore.googleapis.com", APIVersion: "v1beta1"}
+	api3 := API{Name: "cloudbuild.googleapis.com", APIVersion: "v1"}
+
 	for _, test := range []struct {
-		name      string
-		overrides *Config
-		want      string
+		name        string
+		config      *Config
+		serviceName string
+		version     string
+		want        *API
 	}{
 		{
-			name:      "No APIs in config",
-			overrides: &Config{},
-			want:      "",
+			name:        "Nil Config",
+			config:      nil,
+			serviceName: "parallelstore.googleapis.com",
+			version:     "v1",
+			want:        nil,
 		},
 		{
-			name: "API version found",
-			overrides: &Config{
-				APIs: []API{
-					{APIVersion: "v2beta1"},
-				},
+			name:        "No APIs in Config",
+			config:      &Config{},
+			serviceName: "parallelstore.googleapis.com",
+			version:     "v1",
+			want:        nil,
+		},
+		{
+			name: "Exact match",
+			config: &Config{
+				APIs: []API{api1, api2, api3},
 			},
-			want: "v2beta1",
+			serviceName: "parallelstore.googleapis.com",
+			version:     "v1beta1",
+			want:        &api2,
+		},
+		{
+			name: "No fallback to single API in config",
+			config: &Config{
+				APIs: []API{api3},
+			},
+			serviceName: "parallelstore.googleapis.com",
+			version:     "v1",
+			want:        nil,
+		},
+		{
+			name: "No match with multiple APIs",
+			config: &Config{
+				APIs: []API{api1, api2, api3},
+			},
+			serviceName: "nonexistent.googleapis.com",
+			version:     "v2",
+			want:        nil,
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			got := APIVersion(test.overrides)
-			if got != test.want {
-				t.Errorf("APIVersion() = %v, want %v", got, test.want)
+			got := test.config.API(test.serviceName, test.version)
+			if diff := cmp.Diff(test.want, got); diff != "" {
+				t.Errorf("API() mismatch (-want +got):\n%s", diff)
 			}
 		})
 	}
