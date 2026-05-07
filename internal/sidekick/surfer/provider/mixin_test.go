@@ -288,43 +288,6 @@ func TestInferOperationResource(t *testing.T) {
 				},
 			},
 		},
-
-		{
-			name: "Path Info Nil",
-			method: &api.Method{
-				PathInfo: nil,
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Nil Binding",
-			method: &api.Method{
-				Model: mockModel,
-				PathInfo: &api.PathInfo{
-					Bindings: []*api.PathBinding{
-						nil,
-					},
-				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Missing PathTemplate",
-			method: &api.Method{
-				Model: mockModel,
-				PathInfo: &api.PathInfo{
-					Bindings: []*api.PathBinding{
-						{
-							PathTemplate: nil,
-						},
-					},
-				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
 	}
 
 	for _, tt := range tests {
@@ -397,14 +360,6 @@ func TestInferLocationResource(t *testing.T) {
 				PathInfo: &api.PathInfo{
 					Bindings: []*api.PathBinding{},
 				},
-			},
-			want:    nil,
-			wantErr: true,
-		},
-		{
-			name: "Path Info Nil",
-			method: &api.Method{
-				PathInfo: nil,
 			},
 			want:    nil,
 			wantErr: true,

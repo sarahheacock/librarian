@@ -116,10 +116,6 @@ func inferLocationResource(m *api.Method) (*api.Resource, error) {
 // For each method pattern like /v1/{name=projects/*/locations/*/operations/*}, create a corresponding
 // resource pattern like /projects/{project}/locations/{location}/operations/{operation}.
 func resourcePatterns(m *api.Method) ([]api.ResourcePattern, error) {
-	if m.PathInfo == nil || len(m.PathInfo.Bindings) == 0 {
-		return nil, nil
-	}
-
 	var patterns []api.ResourcePattern
 	for _, binding := range m.PathInfo.Bindings {
 		expanded, err := expandBinding(binding)
@@ -146,13 +142,6 @@ func resourcePatterns(m *api.Method) ([]api.ResourcePattern, error) {
 //  2. Expanding complex, multi-level nested variables (e.g., "{name=projects/*/locations/*}")
 //     into alternating literal and wildcard variables (e.g., "projects", "{project}", "locations", "{location}").
 func expandBinding(binding *api.PathBinding) ([]api.PathSegment, error) {
-	if binding == nil {
-		return nil, fmt.Errorf("nil PathBinding")
-	}
-	if binding.PathTemplate == nil {
-		return nil, fmt.Errorf("missing PathTemplate in PathBinding")
-	}
-
 	var expandedSegments []api.PathSegment
 	for _, seg := range binding.PathTemplate.Segments {
 		if seg.Literal != nil {
