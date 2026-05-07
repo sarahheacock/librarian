@@ -42,6 +42,7 @@ var (
 		"method_operations":   true,
 		"multi_service":       true,
 		"resource_standard":   true,
+		"update_mask":         true,
 	}
 )
 

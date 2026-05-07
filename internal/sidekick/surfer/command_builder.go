@@ -35,7 +35,7 @@ func newCommand(method *api.Method, overrides *provider.Config, model *api.API, 
 		return nil, err
 	}
 
-	useUpdateMask := updateMask(method)
+	useUpdateMask := updateMask(model, method, overrides)
 	return &Command{
 		Name:                 name(method),
 		Hidden:               hidden(overrides),
@@ -355,8 +355,12 @@ func collectionPath(method *api.Method, service *api.Service, isAsync bool) []st
 	return slices.Compact(collections)
 }
 
-func updateMask(method *api.Method) bool {
+func updateMask(model *api.API, method *api.Method, overrides *provider.Config) bool {
 	if !provider.IsUpdate(method) || method.InputType == nil {
+		return false
+	}
+	version := provider.APIVersionFromModel(model)
+	if !provider.SupportsStarUpdateMasks(overrides, method.Service.Name, version) {
 		return false
 	}
 	for _, f := range method.InputType.Fields {

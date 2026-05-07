@@ -97,12 +97,9 @@
     api_version: v3
     collection:
       - iam.organizations.locations.principalAccessBoundaryPolicies
-    static_fields:
-      updateMask: '*'
   async:
     collection:
       - iam.organizations.locations.operations
     extract_resource_result: true
   update:
-    disable_auto_field_mask: true
     read_modify_update: true

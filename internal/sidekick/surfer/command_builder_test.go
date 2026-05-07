@@ -426,6 +426,46 @@ func TestNewCommand(t *testing.T) {
 			},
 		},
 		{
+			name: "Update Command with star update mask disabled",
+			method: func() *api.Method {
+				m := api.NewTestMethod("UpdateThing").
+					WithVerb("PATCH").
+					WithInput(api.NewTestMessage("UpdateThingRequest").WithFields(
+						api.NewTestField("thing").WithType(api.TypezMessage).WithMessageType(
+							api.NewTestMessage("Thing").WithFields(
+								api.NewTestField("name").WithType(api.TypezString),
+							).WithResource(api.NewTestResource("test.googleapis.com/Thing")),
+						),
+						api.NewTestField("update_mask").WithType(api.TypezMessage),
+					)).
+					WithPathTemplate((&api.PathTemplate{}).
+						WithLiteral("v1").
+						WithVariable(api.NewPathVariable("thing", "name").WithLiteral("projects").WithMatch().WithLiteral("things").WithMatch()))
+				m.ID = "google.cloud.test.v1.Service.UpdateThing"
+				return m
+			}(),
+			overrides: func() *provider.Config {
+				fBool := false
+				return &provider.Config{
+					APIs: []provider.API{
+						{
+							Name:                    "TestService",
+							APIVersion:              "v1",
+							SupportsStarUpdateMasks: &fBool,
+						},
+					},
+				}
+			}(),
+			want: &Command{
+				Name:                 "update",
+				Hidden:               false,
+				ReadModifyUpdate:     true,
+				StarUpdateMask:       false,
+				DisableAutoFieldMask: false,
+				APIVersion:           "v1",
+			},
+		},
+		{
 			name: "LRO Command",
 			method: func() *api.Method {
 				m := api.NewTestMethod("CreateThing").

@@ -142,8 +142,6 @@
       - iam.folders.locations.policyBindings
       - iam.organizations.locations.policyBindings
       - iam.projects.locations.policyBindings
-    static_fields:
-      updateMask: '*'
   async:
     collection:
       - iam.folders.locations.operations
@@ -151,5 +149,4 @@
       - iam.projects.locations.operations
     extract_resource_result: true
   update:
-    disable_auto_field_mask: true
     read_modify_update: true
